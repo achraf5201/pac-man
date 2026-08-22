@@ -1,16 +1,19 @@
 import arcade
 import random
 
+
 class GameView(arcade.Window):
     def __init__(self):
         super().__init__(1920, 1080, "ael-bala")
         self.background_color = arcade.csscolor.NAVY
 
-        self.player_texture = arcade.load_texture("player.png")
-        self.red_gost_texture = arcade.load_texture("red_gost.png")
-        self.orange_gost_texture = arcade.load_texture("orange_gost.png")
-        self.blue_gost_texture = arcade.load_texture("blue_gost.png")
-        self.green_gost_texture = arcade.load_texture("green_gost.png")
+        self.player_texture = arcade.load_texture("images/player.png")
+        self.red_gost_texture = arcade.load_texture("images/red_gost.png")
+        self.orange_gost_texture = arcade.load_texture(
+            "images/orange_gost.png"
+        )
+        self.blue_gost_texture = arcade.load_texture("images/blue_gost.png")
+        self.green_gost_texture = arcade.load_texture("images/green_gost.png")
 
         self.player_sprite = arcade.Sprite(self.player_texture, scale=0.2)
         self.player_sprite.center_x = 960
@@ -61,7 +64,6 @@ class GameView(arcade.Window):
 
         for ghost in self.all_ghosts:
             ghost.update()
-
             if ghost.left < 0 or ghost.right > 1920:
                 ghost.change_x *= -1
 
@@ -83,3 +85,19 @@ class GameView(arcade.Window):
 d = GameView()
 d.setup()
 arcade.run()
+
+
+#               GAME LOOP
+#                   │
+#           ┌───────┴───────┐
+#           ↓               ↓
+#      on_update()       on_draw()
+#           │               │
+#           ↓               ↓
+#    Change the game    Show the game
+#           │               │
+#           ↓               ↓
+#    player moves       draw player
+#    enemy moves        draw enemy
+#    collisions         draw maze
+#    score changes      draw score
