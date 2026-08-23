@@ -1,119 +1,48 @@
-from mazegenerator import MazeGenerator
 import arcade
+from mazegenerator import MazeGenerator
 
 maze = MazeGenerator()
 
-print(maze._perfect)
+HEIGHT_SIZE = len(maze._maze)
+WIDTH_SIZE = len(maze._maze[0])
+print(HEIGHT_SIZE)
+print(WIDTH_SIZE)
+CELL_SIZE = 40
 
 
-def draw_maze(maze):
-
-    rows = len(maze)
-    cols = len(maze[0])
-
-    horizontal = "---"
-
-    print(
-        "+"
-        + "+".join(
-            horizontal if maze[0][c] & 1 else "   " for c in range(cols)
-        )
-        + "+"
-    )
-    for r in range(rows):
-        line = ""
-        for c in range(cols):
-            if maze[r][c] & 8:
-                line += "|"
-            else:
-                line += " "
-            line += "   "
-        if maze[r][cols - 1] & 2:
-            line += "|"
-        else:
-            line += " "
-        print(line)
-        line = "+"
-        for c in range(cols):
-            if maze[r][c] & 4:
-                line += "---"
-            else:
-                line += "   "
-
-            if c < cols - 1:
-                line += "+"
-        line += "+"
-        print(line)
-
-
-if not maze._perfect:
-    draw_maze(maze._maze)
-
-
-class Gosts:
-    def random_movement():
-        pass
-
-    def chasing():
-        pass
-
-    def fleeing():
-        pass
-
-    def respawn():
-        pass
-
-
-class player:
-    pass
-
-
-class Pac_Man:
-    def __init__(self):
-        self.highscore_filename = ""
-        self.level
-        self.width
-        self.lives
-        self.pacgum
-        self.points_per_pacgum
-        self.points_per_super_pacgum
-        self.points_per_ghost
-        self.seed
-        self.level_max_time
-
-import arcade
-
-WIDTH = 800
-HEIGHT = 600
-
-
-class MyGame(arcade.Window):
-    def __init__(self):
-        super().__init__(WIDTH, HEIGHT, "Moving Player")
-
-        self.player_x = 400
-        self.player_y = 300
-        self.speed = 20
+class MazeView(arcade.View):
 
     def on_draw(self):
         self.clear()
-        arcade.draw_circle_filled(
-            self.player_x,
-            self.player_y,
-            25,
-            arcade.color.BLUE
-        )
+        for row_index, row in enumerate(maze._maze):
+            for col_index, cell_value in enumerate(row):
+                x = col_index * CELL_SIZE
+                y = (HEIGHT_SIZE - 1 - row_index) * CELL_SIZE
 
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.LEFT:
-            self.player_x -= self.speed
-        elif key == arcade.key.RIGHT:
-            self.player_x += self.speed
-        elif key == arcade.key.UP:
-            self.player_y += self.speed
-        elif key == arcade.key.DOWN:
-            self.player_y -= self.speed
+                if cell_value & 1:
+                    arcade.draw_lbwh_rectangle_filled(
+                        x, y + CELL_SIZE - 5, CELL_SIZE, 5, arcade.color.BLUE
+                    )
+
+                if cell_value & 2:
+                    arcade.draw_lbwh_rectangle_filled(
+                        x + CELL_SIZE - 5, y, 5, CELL_SIZE, arcade.color.BLUE
+                    )
+
+                if cell_value & 4:
+                    arcade.draw_lbwh_rectangle_filled(
+                        x, y, CELL_SIZE, 5, arcade.color.BLUE
+                    )
+
+                if cell_value & 8:
+                    arcade.draw_lbwh_rectangle_filled(
+                        x, y, 5, CELL_SIZE, arcade.color.BLUE
+                    )
 
 
-game = MyGame()
+window = arcade.Window(fullscreen=True, title="Maze")
+
+view = MazeView()
+window.show_view(view)
+
 arcade.run()
