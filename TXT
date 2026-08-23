@@ -1,2 +1,0 @@
-RSSAM LMAZE
-gost {x, y, range{x +- nx, y +- ny}}
