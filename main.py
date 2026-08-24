@@ -1,25 +1,31 @@
 import arcade
+import random
 from mazegenerator import MazeGenerator
 
 
 class RedGhost(arcade.Sprite):
     def __init__(self, filename):
-        super().__init__(filename, 0.1)
+        super().__init__(filename, 0.09)
+        self._speedx = 100
+        self._speedy = 100
+        self.grid_col = 0
+        self.grid_row = 0
+        self.timer = 0
 
 
 class GreenGhost(arcade.Sprite):
     def __init__(self, filename):
-        super().__init__(filename, 0.1)
+        super().__init__(filename, 0.09)
 
 
 class BlueGhost(arcade.Sprite):
     def __init__(self, filename):
-        super().__init__(filename, 0.1)
+        super().__init__(filename, 0.09)
 
 
 class OrangeGhost(arcade.Sprite):
     def __init__(self, filename):
-        super().__init__(filename, 0.1)
+        super().__init__(filename, 0.09)
 
 
 class MazeView(arcade.View):
@@ -46,6 +52,8 @@ class MazeView(arcade.View):
             + (self.maze_height - 1) * self.cell_size
             + self.cell_size / 2
         )
+        print(self.red_ghost.center_x, self.offset_x, self.cell_size)
+        print(self.red_ghost.center_y, self.offset_y, self.cell_size)
 
         self.green_ghost = GreenGhost("images/green_ghost.png")
         self.green_ghost.center_x = self.offset_x + self.cell_size / 2
@@ -75,6 +83,7 @@ class MazeView(arcade.View):
         self.all_sprites.append(self.green_ghost)
         self.all_sprites.append(self.orange_ghost)
         self.all_sprites.append(self.blue_ghost)
+        self.ra = 0
 
     def _calc_config(self):
         self.maze_width = len(self.maze._maze[0])
@@ -139,11 +148,31 @@ class MazeView(arcade.View):
         self.all_sprites.draw()
 
     def on_update(self, delta_time):
-        pass
+
+        self.red_ghost.timer += delta_time
+        if self.red_ghost.timer >= 0.6915:
+            self.red_ghost.timer = 0
+            self.ra = random.choice([0, 1])
+        if self.ra == 0:
+            self.red_ghost.center_x += self.red_ghost._speedx * delta_time
+        else:
+            self.red_ghost.center_y += self.red_ghost._speedy * delta_time
+        if self.red_ghost.center_x > (self.offset_x + ((len(self.maze._maze[0]) - 1) * self.cell_size) + self.cell_size / 2):
+            self.red_ghost.center_x = (self.offset_x + ((len(self.maze._maze[0]) - 1) * self.cell_size) + self.cell_size / 2)
+            self.red_ghost._speedx *= -1
+        if self.red_ghost.center_y > (self.offset_y + ((len(self.maze._maze) - 1) * self.cell_size) + self.cell_size / 2):
+            self.red_ghost.center_y = (self.offset_y + ((len(self.maze._maze) - 1) * self.cell_size) + self.cell_size / 2)
+            self.red_ghost._speedy *= -1
+        if self.red_ghost.center_x < self.offset_x + self.cell_size / 2:
+            self.red_ghost.center_x = self.offset_x + self.cell_size / 2
+            self.red_ghost._speedx *= -1
+        if self.red_ghost.center_y < self.offset_y + self.cell_size / 2:
+            self.red_ghost.center_y = self.offset_y + self.cell_size / 2
+            self.red_ghost._speedy *= -1
 
 
 def main():
-    maze = MazeGenerator()
+    maze = MazeGenerator(entry_cell=(0, 0), exit_cell=(15, 15))
     window = arcade.Window(fullscreen=True, title="Maze")
 
     view = MazeView(maze)
