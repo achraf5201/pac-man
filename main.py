@@ -6,11 +6,10 @@ from mazegenerator import MazeGenerator
 class RedGhost(arcade.Sprite):
     def __init__(self, filename):
         super().__init__(filename, 0.09)
-        self._speedx = 100
-        self._speedy = 100
         self.grid_col = 0
         self.grid_row = 0
         self.timer = 0
+        self.move_interval = 0.3
 
 
 class GreenGhost(arcade.Sprite):
@@ -46,6 +45,8 @@ class MazeView(arcade.View):
         self.all_sprites = arcade.SpriteList()
 
         self.red_ghost = RedGhost("images/red_ghost.png")
+        self.red_ghost.grid_col = 0
+        self.red_ghost.grid_row = 0
         self.red_ghost.center_x = self.offset_x + self.cell_size / 2
         self.red_ghost.center_y = (
             self.offset_y
@@ -83,6 +84,7 @@ class MazeView(arcade.View):
         self.all_sprites.append(self.green_ghost)
         self.all_sprites.append(self.orange_ghost)
         self.all_sprites.append(self.blue_ghost)
+        
         self.ra = 0
 
     def _calc_config(self):
@@ -97,6 +99,28 @@ class MazeView(arcade.View):
         self.offset_y = (
             self.screen_height - self.maze_height * self.cell_size
         ) / 2
+    
+    def grid_to_pixel(self, col, row): #katconverti grid coordinates l pixel to show it on the viusalizer
+        x = self.offset_x + col * self.cell_size + self.cell_size / 2  # self.offset_x useless space + col = 3 so we need to skip three cols andrboha b cell_size o kanzid another col / 2 to land in the middle
+        y = (
+            self.offset_y
+            + (self.maze_height - 1 - row) * self.cell_size # maze_height => example 16 - 1 bcs of len() [[row1],[row2], [row3]] 
+            + self.cell_size / 2 # same logic
+        )
+        return x, y
+
+    def get_open_directions(self, col, row):
+        cell_value = self.maze._maze[row][col]
+        directions = []
+        if not cell_value & 1:
+            directions.append((0, -1))
+        if not cell_value & 2:
+            directions.append((1, 0))
+        if not cell_value & 4:
+            directions.append((0, 1))
+        if not cell_value & 8:
+            directions.append((-1, 0))
+        return directions
 
     def on_draw(self):
         self.clear()
@@ -148,27 +172,21 @@ class MazeView(arcade.View):
         self.all_sprites.draw()
 
     def on_update(self, delta_time):
+        ghost = self.red_ghost
+        ghost.timer += delta_time
 
-        self.red_ghost.timer += delta_time
-        if self.red_ghost.timer >= 0.6915:
-            self.red_ghost.timer = 0
-            self.ra = random.choice([0, 1])
-        if self.ra == 0:
-            self.red_ghost.center_x += self.red_ghost._speedx * delta_time
-        else:
-            self.red_ghost.center_y += self.red_ghost._speedy * delta_time
-        if self.red_ghost.center_x > (self.offset_x + ((len(self.maze._maze[0]) - 1) * self.cell_size) + self.cell_size / 2):
-            self.red_ghost.center_x = (self.offset_x + ((len(self.maze._maze[0]) - 1) * self.cell_size) + self.cell_size / 2)
-            self.red_ghost._speedx *= -1
-        if self.red_ghost.center_y > (self.offset_y + ((len(self.maze._maze) - 1) * self.cell_size) + self.cell_size / 2):
-            self.red_ghost.center_y = (self.offset_y + ((len(self.maze._maze) - 1) * self.cell_size) + self.cell_size / 2)
-            self.red_ghost._speedy *= -1
-        if self.red_ghost.center_x < self.offset_x + self.cell_size / 2:
-            self.red_ghost.center_x = self.offset_x + self.cell_size / 2
-            self.red_ghost._speedx *= -1
-        if self.red_ghost.center_y < self.offset_y + self.cell_size / 2:
-            self.red_ghost.center_y = self.offset_y + self.cell_size / 2
-            self.red_ghost._speedy *= -1
+        if ghost.timer >= ghost.move_interval:
+            ghost.timer = 0
+
+            options = self.get_open_directions(ghost.grid_col, ghost.grid_row)
+            if options:
+                dcol, drow = random.choice(options)
+                ghost.grid_col += dcol
+                ghost.grid_row += drow
+
+                x, y = self.grid_to_pixel(ghost.grid_col, ghost.grid_row)
+                ghost.center_x = x
+                ghost.center_y = y
 
 
 def main():
