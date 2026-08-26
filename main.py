@@ -1,6 +1,6 @@
 import arcade
-import random
 from mazegenerator import MazeGenerator
+import time
 
 
 class RedGhost(arcade.Sprite):
@@ -12,6 +12,11 @@ class RedGhost(arcade.Sprite):
         self.move_interval = 0.3
         self.path = ""
         self.path_index = 0
+        self.respawn = False
+        self.run = False
+        self.chase = False
+        self.random_move = True
+        self.range = []
 
 
 class GreenGhost(arcade.Sprite):
@@ -176,6 +181,52 @@ class MazeView(arcade.View):
 
         self.all_sprites.draw()
 
+    def _random_move(self):
+        options = self.get_open_directions(
+            self.red_ghost.path_index,
+        )
+        if options:
+            col, row = options
+            self.red_ghost.path_index += 1
+            self.red_ghost.grid_row += row
+            self.red_ghost.grid_col += col
+
+            self.red_ghost.start_x = self.red_ghost.center_x
+            self.red_ghost.start_y = self.red_ghost.center_y
+
+            self.red_ghost.target_x, self.red_ghost.target_y = (
+                self.grid_to_pixel(
+                    self.red_ghost.grid_row, self.red_ghost.grid_col
+                )
+            )
+
+            self.red_ghost.timer -= self.red_ghost.move_interval
+        else:
+            self.red_ghost.timer = self.red_ghost.move_interval
+
+    def _player_in_range(self):
+        pass
+
+    def _update_range(self):
+        self.red_ghost.range = []
+        for i in range(
+            self.red_ghost.grid_row - (len(self.maze._maze) // 4),
+            self.red_ghost.grid_row + (len(self.maze._maze) // 4),
+        ):
+            for j in range(
+                self.red_ghost.grid_col - (len(self.maze._maze[0]) // 4),
+                self.red_ghost.grid_col + (len(self.maze._maze[0]) // 4),
+            ):
+                if i < 0 or j < 0:
+                    continue
+                self.red_ghost.range.append((j, i))
+        print((len(self.maze._maze) // 4), (len(self.maze._maze[0]) // 4))
+        print("=======", self.red_ghost.range)
+        print("\n\n\n")
+
+    def _chase_move(self):
+        pass
+
     def _red_ghost_move(self, delta_time):
 
         if not hasattr(self.red_ghost, "start_y"):
@@ -188,7 +239,6 @@ class MazeView(arcade.View):
 
         if self.red_ghost.timer < self.red_ghost.move_interval:
             progress = self.red_ghost.timer / self.red_ghost.move_interval
-            print(progress)
             self.red_ghost.center_x = (
                 self.red_ghost.start_x
                 + (self.red_ghost.target_x - self.red_ghost.start_x) * progress
@@ -197,34 +247,14 @@ class MazeView(arcade.View):
                 self.red_ghost.start_y
                 + (self.red_ghost.target_y - self.red_ghost.start_y) * progress
             )
-            print(self.red_ghost.center_x, self.red_ghost.center_y)
 
         else:
             self.red_ghost.center_x = self.red_ghost.target_x
             self.red_ghost.center_y = self.red_ghost.target_y
-            print(self.red_ghost.center_x, self.red_ghost.center_y)
-
-            options = self.get_open_directions(
-                self.red_ghost.path_index,
-            )
-            if options:
-                col, row = options
-                self.red_ghost.path_index += 1
-                self.red_ghost.grid_row += row
-                self.red_ghost.grid_col += col
-
-                self.red_ghost.start_x = self.red_ghost.center_x
-                self.red_ghost.start_y = self.red_ghost.center_y
-
-                self.red_ghost.target_x, self.red_ghost.target_y = (
-                    self.grid_to_pixel(
-                        self.red_ghost.grid_row, self.red_ghost.grid_col
-                    )
-                )
-
-                self.red_ghost.timer -= self.red_ghost.move_interval
-            else:
-                self.red_ghost.timer = self.red_ghost.move_interval
+            if self.red_ghost.random_move:
+                self._random_move()
+                self._update_range()
+                time.sleep(3)
 
     def on_update(self, delta_time):
         self._red_ghost_move(delta_time)
