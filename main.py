@@ -45,13 +45,16 @@ class MazeView(arcade.View):
         self._calc_config()
 
         self.all_sprites = arcade.SpriteList()
-        print((cell_size / 100))
-        self.red_ghost = RedGhost("images/red_ghost.png", size=(cell_size / 700))
+        self.red_ghost = RedGhost(
+            "images/red_ghost.png", size=(cell_size / 700)
+        )
         self.red_ghost.grid_col = 0
         self.red_ghost.grid_row = 0
         self.red_ghost.center_x = self.offset_x + self.cell_size / 2
         self.red_ghost.center_y = (
-            self.offset_y + (self.maze_height - 1) * self.cell_size + self.cell_size / 2
+            self.offset_y
+            + (self.maze_height - 1) * self.cell_size
+            + self.cell_size / 2
         )
         self.red_ghost.path = self.maze._shortest_path
 
@@ -91,10 +94,14 @@ class MazeView(arcade.View):
         self.maze_height = len(self.maze._maze)
         self.screen_width, self.screen_height = arcade.get_display_size()
 
-        self.offset_x = (self.screen_width - self.maze_width * self.cell_size) / 2
-        self.offset_y = (self.screen_height - self.maze_height * self.cell_size) / 2
+        self.offset_x = (
+            self.screen_width - self.maze_width * self.cell_size
+        ) / 2
+        self.offset_y = (
+            self.screen_height - self.maze_height * self.cell_size
+        ) / 2
 
-    def grid_to_pixel(self, col, row):
+    def grid_to_pixel(self, row, col):
         x = self.offset_x + col * self.cell_size + self.cell_size / 2
         y = (
             self.offset_y
@@ -103,7 +110,7 @@ class MazeView(arcade.View):
         )
         return x, y
 
-    def get_open_directions(self, col, row, index):
+    def get_open_directions(self, index):
         if index >= len(self.red_ghost.path):
             return None
 
@@ -125,7 +132,10 @@ class MazeView(arcade.View):
         for row_index, row in enumerate(self.maze._maze):
             for col_index, cell_value in enumerate(row):
                 x = self.offset_x + col_index * self.cell_size
-                y = self.offset_y + (self.maze_height - 1 - row_index) * self.cell_size
+                y = (
+                    self.offset_y
+                    + (self.maze_height - 1 - row_index) * self.cell_size
+                )
 
                 if cell_value == 15:
                     arcade.draw_lbwh_rectangle_filled(
@@ -167,46 +177,54 @@ class MazeView(arcade.View):
         self.all_sprites.draw()
 
     def _red_ghost_move(self, delta_time):
-        ghost = self.red_ghost
 
-        if not hasattr(ghost, "target_x"):
-            ghost.target_x = ghost.center_x
-            ghost.target_y = ghost.center_y
-            ghost.start_x = ghost.center_x
-            ghost.start_y = ghost.center_y
+        if not hasattr(self.red_ghost, "start_y"):
+            self.red_ghost.target_x = self.red_ghost.center_x
+            self.red_ghost.target_y = self.red_ghost.center_y
+            self.red_ghost.start_x = self.red_ghost.center_x
+            self.red_ghost.start_y = self.red_ghost.center_y
 
-        ghost.timer += delta_time
+        self.red_ghost.timer += delta_time
 
-        if ghost.timer < ghost.move_interval:
-            progress = ghost.timer / ghost.move_interval
-
-            ghost.center_x = ghost.start_x + (ghost.target_x - ghost.start_x) * progress
-            ghost.center_y = ghost.start_y + (ghost.target_y - ghost.start_y) * progress
+        if self.red_ghost.timer < self.red_ghost.move_interval:
+            progress = self.red_ghost.timer / self.red_ghost.move_interval
+            print(progress)
+            self.red_ghost.center_x = (
+                self.red_ghost.start_x
+                + (self.red_ghost.target_x - self.red_ghost.start_x) * progress
+            )
+            self.red_ghost.center_y = (
+                self.red_ghost.start_y
+                + (self.red_ghost.target_y - self.red_ghost.start_y) * progress
+            )
+            print(self.red_ghost.center_x, self.red_ghost.center_y)
 
         else:
-            ghost.center_x = ghost.target_x
-            ghost.center_y = ghost.target_y
+            self.red_ghost.center_x = self.red_ghost.target_x
+            self.red_ghost.center_y = self.red_ghost.target_y
+            print(self.red_ghost.center_x, self.red_ghost.center_y)
 
             options = self.get_open_directions(
-                ghost.grid_col, ghost.grid_row, ghost.path_index
+                self.red_ghost.path_index,
             )
-
             if options:
-                dcol, drow = options
-                ghost.path_index += 1
-                ghost.grid_col += dcol
-                ghost.grid_row += drow
+                col, row = options
+                self.red_ghost.path_index += 1
+                self.red_ghost.grid_row += row
+                self.red_ghost.grid_col += col
 
-                ghost.start_x = ghost.center_x
-                ghost.start_y = ghost.center_y
+                self.red_ghost.start_x = self.red_ghost.center_x
+                self.red_ghost.start_y = self.red_ghost.center_y
 
-                ghost.target_x, ghost.target_y = self.grid_to_pixel(
-                    ghost.grid_col, ghost.grid_row
+                self.red_ghost.target_x, self.red_ghost.target_y = (
+                    self.grid_to_pixel(
+                        self.red_ghost.grid_row, self.red_ghost.grid_col
+                    )
                 )
 
-                ghost.timer -= ghost.move_interval
+                self.red_ghost.timer -= self.red_ghost.move_interval
             else:
-                ghost.timer = ghost.move_interval
+                self.red_ghost.timer = self.red_ghost.move_interval
 
     def on_update(self, delta_time):
         self._red_ghost_move(delta_time)
@@ -216,7 +234,7 @@ def main():
     maze = MazeGenerator(size=(27, 15), entry_cell=(0, 0), exit_cell=(15, 15))
     window = arcade.Window(fullscreen=True, title="Maze")
 
-    view = MazeView(maze, cell_size=10)
+    view = MazeView(maze, cell_size=60)
     window.show_view(view)
     arcade.run()
 
