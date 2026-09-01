@@ -254,7 +254,6 @@ class MazeView(arcade.View):
             if self.red_ghost.random_move:
                 self._random_move()
                 self._update_range()
-                time.sleep(3)
 
     def on_update(self, delta_time):
         self._red_ghost_move(delta_time)
