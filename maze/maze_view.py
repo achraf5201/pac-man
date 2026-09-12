@@ -17,7 +17,7 @@ class GameView(arcade.View):
         c_x, c_y = self.maze_adapter.center
         p_x, p_y = self.maze_adapter.cell_to_pixel(c_x, c_y)
 
-        self.player = Player(c_x, c_y, p_x, p_y, 50, self.maze_adapter)
+        self.player = Player(c_x, c_y, p_x, p_y, 3, self.maze_adapter)
         self._eject_player_from_walls()
 
     def _eject_player_from_walls(self):

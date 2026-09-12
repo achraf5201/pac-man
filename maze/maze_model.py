@@ -49,16 +49,3 @@ class MazeModel:
         if 0 <= x - 1 < self.width and 0 <= y < self.height:
             res.append((x - 1, y))
         return res
-
-
-# # MazeModel
-# # │
-# # ├── walls
-# # ├── width
-# # ├── height
-# # ├── corners
-# # ├── center
-# # └── methods
-# #     ├── has_wall()
-# #     ├── can_move()
-# #     └── neighbors()
