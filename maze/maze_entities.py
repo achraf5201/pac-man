@@ -50,16 +50,19 @@ class Player:
         dx = self.target_px - self.pixel_x
         dy = self.target_py - self.pixel_y
         dist = (dx**2 + dy**2) ** 0.5
+
         if dist <= step:
             self.pixel_x = self.target_px
             self.pixel_y = self.target_py
             self.cell_x = self.target_cell_x
             self.cell_y = self.target_cell_y
+
             if self.next_dir and self.maze_adapter.can_move(
                 self.cell_x, self.cell_y, self.next_dir
             ):
                 self.current_dir = self.next_dir
                 self.next_dir = None
+
             if self.current_dir and self.maze_adapter.can_move(
                 self.cell_x, self.cell_y, self.current_dir
             ):
@@ -71,6 +74,7 @@ class Player:
                         self.target_cell_x, self.target_cell_y
                     )
                 )
+
         else:
             self.pixel_x += (dx / dist) * step
             self.pixel_y += (dy / dist) * step
