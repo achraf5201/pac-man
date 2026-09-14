@@ -25,7 +25,7 @@ class MazeModel:
     def neighbors(self, x, y):
         res = []
         if 0 <= x < self.width and 0 <= y - 1 < self.height:
-            if self.can_move(x, y, 1):
+            if self.can_move(x, y - 1, 1):
                 res.append((x, y - 1))
         if 0 <= x + 1 < self.width and 0 <= y < self.height:
             if self.can_move(x + 1, y, 2):
