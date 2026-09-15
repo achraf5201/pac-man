@@ -6,9 +6,7 @@ import math
 
 
 # hadi ghi vibe coditha mafiyach li yfhamha hta nchofo drari kidaro lplayer wndiro b7alhom
-def draw_filled_arc(
-    surface, color, center, radius, start_angle_deg, stop_angle_deg
-):
+def draw_filled_arc(surface, color, center, radius, start_angle_deg, stop_angle_deg):
     """Draws a filled pie-slice/arc on a surface."""
     points = [center]
     for degree in range(start_angle_deg, stop_angle_deg + 1):
@@ -27,7 +25,7 @@ pygame.init()
 
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
-maze_g = MazeGenerator(size=(38, 21), entry_cell=(0, 0), exit_cell=(15, 15))
+maze_g = MazeGenerator(size=(27, 14), entry_cell=(0, 0), exit_cell=(15, 15))
 
 
 cell_size = 50
@@ -61,7 +59,6 @@ def eject_player_from_walls():
 
 
 eject_player_from_walls()
-
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -73,6 +70,15 @@ while running:
     # Draw maze
     for row_index, row in enumerate(walls):
         for col_index, cell_value in enumerate(row):
+            pac_px, pac_py = ma.cell_to_pixel(col_index, row_index)
+            if ma.pacgame[row_index][col_index] == 1:
+                draw_filled_arc(
+                    screen,
+                    (255, 255, 255),
+                    (pac_px + cell_size // 2, pac_py + cell_size // 2),
+                    cell_size // 10,
+                    0, 360
+                )
 
             ma._render_maze(cell_value, col_index, row_index, screen)
 

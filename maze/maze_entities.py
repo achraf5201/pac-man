@@ -34,6 +34,9 @@ class Player:
             return -1, 0
         return 0, 0
 
+    def eat_pacgame(self, x, y):
+        self.maze_adapter.pacgame[y][x] = 0
+
     def update(self, delta_time):
         if self.flag == 1:
             self.start_angle += 120 * delta_time
@@ -74,6 +77,8 @@ class Player:
                         self.target_cell_x, self.target_cell_y
                     )
                 )
+                self.eat_pacgame(self.target_cell_x, self.target_cell_y)
+            
 
         else:
             self.pixel_x += (dx / dist) * step
