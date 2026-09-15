@@ -4,7 +4,7 @@ from maze.maze_model import MazeModel
 
 
 class MazeAdapter(MazeModel):
-    def __init__(self, maze, cell_size=60):
+    def __init__(self, maze, cell_size):
         super().__init__(maze)
         self.screen_width = 0
         self.screen_height = 0
