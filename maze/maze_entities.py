@@ -60,6 +60,7 @@ class Player:
             self.cell_x = self.target_cell_x
             self.cell_y = self.target_cell_y
 
+            self.eat_pacgame(self.cell_x, self.cell_y)
             if self.next_dir and self.maze_adapter.can_move(
                 self.cell_x, self.cell_y, self.next_dir
             ):
@@ -77,7 +78,6 @@ class Player:
                         self.target_cell_x, self.target_cell_y
                     )
                 )
-                self.eat_pacgame(self.target_cell_x, self.target_cell_y)
             
 
         else:

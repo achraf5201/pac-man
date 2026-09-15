@@ -72,12 +72,11 @@ while running:
         for col_index, cell_value in enumerate(row):
             pac_px, pac_py = ma.cell_to_pixel(col_index, row_index)
             if ma.pacgame[row_index][col_index] == 1:
-                draw_filled_arc(
+                pygame.draw.circle(
                     screen,
                     (255, 255, 255),
                     (pac_px + cell_size // 2, pac_py + cell_size // 2),
                     cell_size // 10,
-                    0, 360
                 )
 
             ma._render_maze(cell_value, col_index, row_index, screen)
