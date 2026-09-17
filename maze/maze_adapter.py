@@ -11,9 +11,34 @@ class MazeAdapter(MazeModel):
         self.cell_size = cell_size
         self.offset_x = 0
         self.offset_y = 0
-        self.pacgame = [
-            [1 for _ in range(self.width)] for _ in range(self.height)]
-        self.super_pacgame = self.corners
+        self.pacgame = []
+        for i in range(self.height):
+            row = []
+            for j in range(self.width):
+                if (
+                    (i == 0 and j == 0)
+                    or (i == 0 and j == self.width - 1)
+                    or (i == self.height - 1 and j == 0)
+                    or (i == self.height - 1 and j == self.width - 1)
+                ):
+                    row.append(0)
+                else:
+                    row.append(1)
+            self.pacgame.append(row)
+        self.super_pacgame = []
+        for i in range(self.height):
+            row = []
+            for j in range(self.width):
+                if (
+                    (i == 0 and j == 0)
+                    or (i == 0 and j == self.width - 1)
+                    or (i == self.height - 1 and j == 0)
+                    or (i == self.height - 1 and j == self.width - 1)
+                ):
+                    row.append(1)
+                else:
+                    row.append(0)
+            self.super_pacgame.append(row)
 
     def cell_to_pixel(self, x, y):
         pix_x = self.offset_x + (x * self.cell_size)
@@ -31,12 +56,19 @@ class MazeAdapter(MazeModel):
         height = self.height * self.cell_size
         self.screen_width, self.screen_height = screen.get_size()
         if width >= self.screen_width or height >= self.screen_height:
-            print("Error: maze is too large for the current screen " "resolution.")
+            print(
+                "Error: maze is too large for the current screen "
+                "resolution."
+            )
             sys.exit(1)
 
-        self.offset_x = (self.screen_width - (self.width * self.cell_size)) // 2
+        self.offset_x = (
+            self.screen_width - (self.width * self.cell_size)
+        ) // 2
         self.offset_y = (
-            self.screen_height - (self.height * self.cell_size) - self.cell_size // 4
+            self.screen_height
+            - (self.height * self.cell_size)
+            - self.cell_size // 4
         )
 
     def _render_hud(self, score=0, lives=3, level=0):
@@ -45,10 +77,15 @@ class MazeAdapter(MazeModel):
         width = HUD_WEIGHT * 3
         height = (self.height * self.cell_size) + HUD_HEIGHT
         if width >= self.screen_width or height >= self.screen_height:
-            print("Error: maze is too large for the current screen " "resolution.")
+            print(
+                "Error: maze is too large for the current screen "
+                "resolution."
+            )
             sys.exit(1)
         start_pointx = self.offset_x
-        start_pointy = self.offset_y + (self.height * self.cell_size) + HUD_HEIGHT // 10
+        start_pointy = (
+            self.offset_y + (self.height * self.cell_size) + HUD_HEIGHT // 10
+        )
         self.hud_text.x = start_pointx
         self.hud_text.y = start_pointy
         self.hud_text.text = (
@@ -64,7 +101,10 @@ class MazeAdapter(MazeModel):
             pix + self.cell_size >= self.screen_width
             or piy + self.cell_size >= self.screen_height
         ):
-            print("Error: maze is too large for the current screen " "resolution.")
+            print(
+                "Error: maze is too large for the current screen "
+                "resolution."
+            )
             sys.exit(1)
         if cell_value == 15:
             pygame.draw.rect(
@@ -74,7 +114,9 @@ class MazeAdapter(MazeModel):
             )
 
         if cell_value & 1:
-            pygame.draw.rect(screen, (255, 255, 255), (pix, piy, self.cell_size, 2))
+            pygame.draw.rect(
+                screen, (255, 255, 255), (pix, piy, self.cell_size, 2)
+            )
         if cell_value & 4:
             pygame.draw.rect(
                 screen,
@@ -90,4 +132,6 @@ class MazeAdapter(MazeModel):
             )
 
         if cell_value & 8:
-            pygame.draw.rect(screen, (255, 255, 255), (pix, piy, 2, self.cell_size))
+            pygame.draw.rect(
+                screen, (255, 255, 255), (pix, piy, 2, self.cell_size)
+            )

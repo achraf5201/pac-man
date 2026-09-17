@@ -1,7 +1,3 @@
-class Entity:
-    pass
-
-
 class Player:
     def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter):
         self.cell_x = x
@@ -40,6 +36,12 @@ class Player:
             return True
         return False
 
+    def eat_super_pacgame(self, x, y):
+        if self.maze_adapter.super_pacgame[y][x] == 1:
+            self.maze_adapter.super_pacgame[y][x] = 0
+            return True
+        return False
+
     def update(self, delta_time, engine):
         if self.flag == 1:
             self.start_angle += 120 * delta_time
@@ -66,6 +68,9 @@ class Player:
             if self.eat_pacgame(self.cell_x, self.cell_y):
                 engine.score += 1
                 print(engine.score)
+            if self.eat_super_pacgame(self.cell_x, self.cell_y):
+                engine.score += 100
+                print(engine.score)
             if self.next_dir and self.maze_adapter.can_move(
                 self.cell_x, self.cell_y, self.next_dir
             ):
@@ -78,8 +83,10 @@ class Player:
                 dir_x, dir_y = self.get_cor(self.current_dir)
                 self.target_cell_x = self.cell_x + dir_x
                 self.target_cell_y = self.cell_y + dir_y
-                self.target_px, self.target_py = self.maze_adapter.cell_to_pixel(
-                    self.target_cell_x, self.target_cell_y
+                self.target_px, self.target_py = (
+                    self.maze_adapter.cell_to_pixel(
+                        self.target_cell_x, self.target_cell_y
+                    )
                 )
 
         else:
@@ -87,9 +94,5 @@ class Player:
             self.pixel_y += (dy / dist) * step
 
 
-class Ghost(Entity):
-    pass
-
-
-class EntityManager:
+class Ghost():
     pass

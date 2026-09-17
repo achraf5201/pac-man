@@ -2,7 +2,7 @@ from maze.maze_entities import Player
 import pygame
 from mazegenerator import MazeGenerator
 from maze.maze_adapter import MazeAdapter
-from maze.maze_entities import Player
+from maze.maze_entities import Player, Ghost
 import math
 
 
@@ -13,7 +13,7 @@ class Engine:
         self.life = life
         self.cell_size = cell_size
         self.maze_gen = MazeGenerator(
-            size=(34, 18), entry_cell=(0, 0), exit_cell=(15, 15)
+            size=(3, 3), entry_cell=(0, 0), exit_cell=(15, 15)
         )
         self.maze_adapter = MazeAdapter(self.maze_gen, cell_size)
         self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -24,7 +24,10 @@ class Engine:
         self.player = Player(c_x, c_y, c_px, c_py, 4, self.maze_adapter)
 
     def eject_player_from_walls(self):
-        if self.maze_adapter.walls[self.player.cell_y][self.player.cell_x] == 15:
+        if (
+            self.maze_adapter.walls[self.player.cell_y][self.player.cell_x]
+            == 15
+        ):
             neighbors = self.maze_adapter.p_neighbors(
                 self.player.cell_x, self.player.cell_y
             )
@@ -38,6 +41,21 @@ class Engine:
 
                     self.player.target_cell_x, self.player.target_cell_y = x, y
                     self.player.target_px, self.player.target_py = px, py
+
+    def check_win(self):
+        super_pacgame_zero = sum(
+            sublist.count(0) for sublist in self.maze_adapter.super_pacgame
+        )
+        pacgame_zero = sum(
+            sublist.count(0) for sublist in self.maze_adapter.pacgame
+        )
+        if super_pacgame_zero == (
+            self.maze_adapter.width * self.maze_adapter.height
+        ) and pacgame_zero == (
+            self.maze_adapter.width * self.maze_adapter.height
+        ):
+            return True
+        return False
 
     def _game_loop(self):
         # hadi ghi vibe coditha mafiyach li yfhamha hta nchofo drari kidaro lplayer wndiro b7alhom
@@ -68,10 +86,8 @@ class Engine:
                 if event.type == pygame.QUIT:
                     running = False
 
-            # Background
             self.screen.fill((0, 0, 0))
 
-            # Draw maze
             for row_index, row in enumerate(self.maze_adapter.walls):
                 for col_index, cell_value in enumerate(row):
                     pac_px, pac_py = self.maze_adapter.cell_to_pixel(
@@ -87,7 +103,19 @@ class Engine:
                             ),
                             self.cell_size // 10,
                         )
-
+                    if (
+                        self.maze_adapter.super_pacgame[row_index][col_index]
+                        == 1
+                    ):
+                        pygame.draw.circle(
+                            self.screen,
+                            (255, 255, 255),
+                            (
+                                pac_px + self.cell_size // 2,
+                                pac_py + self.cell_size // 2,
+                            ),
+                            self.cell_size // 5,
+                        )
                     self.maze_adapter._render_maze(
                         cell_value, col_index, row_index, self.screen
                     )
@@ -116,6 +144,9 @@ class Engine:
                 int(self.player.end_angle),
             )
             self.player.update(delta_time, self)
+            if self.check_win():
+                running = False
+                continue
             pygame.display.flip()
 
         pygame.quit()
