@@ -94,5 +94,38 @@ class Player:
             self.pixel_y += (dy / dist) * step
 
 
-class Ghost():
-    pass
+class Ghost:
+
+    # lghost lfikra lijatni nruni lih shortest path l wast mn lowel 7ta ywssal l blassa fin ghadi an3awed nruni shortest path 3awtani lblassa akhra random 7ta ydetecti lplayer ayweli yrani shertest path 3la lplayer fach ayakol lplayer super pacgame ma3arfch kifach lghost ayhrob dik sa3a
+    def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter):
+        self.cell_x = x
+        self.cell_y = y
+        self.pixel_x = pixel_x
+        self.pixel_y = pixel_y
+        self.speed = speed
+        self.maze_adapter = maze_adapter
+
+        self.next_dir = None
+
+        self.target_cell_x = x
+        self.target_cell_y = y
+        self.target_px = pixel_x
+        self.target_py = pixel_y
+
+        self.path = []
+
+        self.chase = False
+        self.run = False
+        self.random_move = True
+
+    def chase_player(self):
+        pass
+
+    def ghosts_running(self):
+        pass
+
+    def ghosts_random_move(self):
+        pass
+
+    def update(self):
+        pass
