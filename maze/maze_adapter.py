@@ -11,7 +11,21 @@ class MazeAdapter(MazeModel):
         self.cell_size = cell_size
         self.offset_x = 0
         self.offset_y = 0
-        self.pacgame = []
+        self.pacgum = []
+        for i in range(self.height):
+            row = []
+            for j in range(self.width):
+                if (
+                    (i == 0 and j == 0)
+                    or (i == 0 and j == self.width - 1)
+                    or (i == self.height - 1 and j == 0)
+                    or (i == self.height - 1 and j == self.width - 1)
+                ) or self.walls[i][j] == 15:
+                    row.append(0)
+                else:
+                    row.append(1)
+            self.pacgum.append(row)
+        self.super_pacgum = []
         for i in range(self.height):
             row = []
             for j in range(self.width):
@@ -21,24 +35,10 @@ class MazeAdapter(MazeModel):
                     or (i == self.height - 1 and j == 0)
                     or (i == self.height - 1 and j == self.width - 1)
                 ):
-                    row.append(0)
-                else:
-                    row.append(1)
-            self.pacgame.append(row)
-        self.super_pacgame = []
-        for i in range(self.height):
-            row = []
-            for j in range(self.width):
-                if (
-                    (i == 0 and j == 0)
-                    or (i == 0 and j == self.width - 1)
-                    or (i == self.height - 1 and j == 0)
-                    or (i == self.height - 1 and j == self.width - 1)
-                ):
                     row.append(1)
                 else:
                     row.append(0)
-            self.super_pacgame.append(row)
+            self.super_pacgum.append(row)
 
     def cell_to_pixel(self, x, y):
         pix_x = self.offset_x + (x * self.cell_size)
@@ -66,10 +66,8 @@ class MazeAdapter(MazeModel):
             self.screen_width - (self.width * self.cell_size)
         ) // 2
         self.offset_y = (
-            self.screen_height
-            - (self.height * self.cell_size)
-            - self.cell_size // 4
-        )
+            self.screen_height - (self.height * self.cell_size)
+        ) // 2
 
     def _render_hud(self, score=0, lives=3, level=0):
         HUD_HEIGHT = 79
@@ -109,29 +107,25 @@ class MazeAdapter(MazeModel):
         if cell_value == 15:
             pygame.draw.rect(
                 screen,
-                (255, 255, 255),
+                'blue',
                 (pix, piy, self.cell_size, self.cell_size),
             )
 
         if cell_value & 1:
-            pygame.draw.rect(
-                screen, (255, 255, 255), (pix, piy, self.cell_size, 2)
-            )
+            pygame.draw.rect(screen, "blue", (pix, piy, self.cell_size, 4))
         if cell_value & 4:
             pygame.draw.rect(
                 screen,
-                (255, 255, 255),
-                (pix, piy + self.cell_size, self.cell_size, 2),
+                "blue",
+                (pix, piy + self.cell_size, self.cell_size, 4),
             )
 
         if cell_value & 2:
             pygame.draw.rect(
                 screen,
-                (255, 255, 255),
-                (pix + self.cell_size, piy, 2, self.cell_size),
+                "blue",
+                (pix + self.cell_size, piy, 4, self.cell_size),
             )
 
         if cell_value & 8:
-            pygame.draw.rect(
-                screen, (255, 255, 255), (pix, piy, 2, self.cell_size)
-            )
+            pygame.draw.rect(screen, "blue", (pix, piy, 4, self.cell_size))

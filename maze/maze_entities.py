@@ -1,3 +1,7 @@
+from abc import abstractmethod
+import random
+
+
 class Player:
     def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter):
         self.cell_x = x
@@ -30,15 +34,15 @@ class Player:
             return -1, 0
         return 0, 0
 
-    def eat_pacgame(self, x, y):
-        if self.maze_adapter.pacgame[y][x] == 1:
-            self.maze_adapter.pacgame[y][x] = 0
+    def eat_pacgum(self, x, y):
+        if self.maze_adapter.pacgum[y][x] == 1:
+            self.maze_adapter.pacgum[y][x] = 0
             return True
         return False
 
-    def eat_super_pacgame(self, x, y):
-        if self.maze_adapter.super_pacgame[y][x] == 1:
-            self.maze_adapter.super_pacgame[y][x] = 0
+    def eat_super_pacgum(self, x, y):
+        if self.maze_adapter.super_pacgum[y][x] == 1:
+            self.maze_adapter.super_pacgum[y][x] = 0
             return True
         return False
 
@@ -65,10 +69,10 @@ class Player:
             self.cell_x = self.target_cell_x
             self.cell_y = self.target_cell_y
 
-            if self.eat_pacgame(self.cell_x, self.cell_y):
+            if self.eat_pacgum(self.cell_x, self.cell_y):
                 engine.score += 1
                 print(engine.score)
-            if self.eat_super_pacgame(self.cell_x, self.cell_y):
+            if self.eat_super_pacgum(self.cell_x, self.cell_y):
                 engine.score += 100
                 print(engine.score)
             if self.next_dir and self.maze_adapter.can_move(
@@ -96,7 +100,7 @@ class Player:
 
 class Ghost:
 
-    # lghost lfikra lijatni nruni lih shortest path l wast mn lowel 7ta ywssal l blassa fin ghadi an3awed nruni shortest path 3awtani lblassa akhra random 7ta ydetecti lplayer ayweli yrani shertest path 3la lplayer fach ayakol lplayer super pacgame ma3arfch kifach lghost ayhrob dik sa3a
+    # lghost lfikra lijatni nruni lih shortest path l wast mn lowel 7ta ywssal l blassa fin ghadi an3awed nruni shortest path 3awtani lblassa akhra random 7ta ydetecti lplayer ayweli yrani shertest path 3la lplayer fach ayakol lplayer super pacgum ma3arfch kifach lghost ayhrob dik sa3a
     def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter):
         self.cell_x = x
         self.cell_y = y
@@ -105,6 +109,7 @@ class Ghost:
         self.speed = speed
         self.maze_adapter = maze_adapter
 
+        self.current_dir = None
         self.next_dir = None
 
         self.target_cell_x = x
@@ -127,5 +132,50 @@ class Ghost:
     def ghosts_random_move(self):
         pass
 
-    def update(self):
-        pass
+    def update(self, delta_time):
+        step = self.speed * self.maze_adapter.cell_size * delta_time
+        dx = self.target_px - self.pixel_x
+        dy = self.target_py - self.pixel_y
+        dist = (dx**2 + dy**2) ** 0.5
+
+        neighbors = self.maze_adapter.neighbors(self.cell_x, self.cell_y)
+        print(neighbors)
+        random_choise = random.choice(neighbors)
+
+        self.cell_x, self.cell_y = random_choise
+
+        # if dist <= step:
+        #     self.cell_x = self.target_cell_x
+        #     self.cell_y = self.target_cell_y
+        #     self.pixel_x = self.target_px
+        #     self.pixel_y = self.target_py
+
+            
+        #     dir_x, dir_y = choise
+        #     self.target_cell_x = self.cell_x + dir_x
+        #     self.target_cell_y = self.cell_y + dir_y
+        #     self.target_px, self.target_py = (
+        #         self.maze_adapter.cell_to_pixel(
+        #             self.target_cell_x, self.target_cell_y
+        #         )
+        #     )
+
+        # else:
+        #     self.pixel_x += (dx / dist) * step
+        #     self.pixel_y += (dy / dist) * step
+
+
+class RedGhost(Ghost):
+    pass
+
+
+class PinkGhost(Ghost):
+    pass
+
+
+class BlueGhost(Ghost):
+    pass
+
+
+class OrangeGhost(Ghost):
+    pass
