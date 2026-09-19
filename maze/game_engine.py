@@ -13,7 +13,8 @@ os.environ.setdefault("PYGAME_FREETYPE", "1")
 import pygame
 from mazegenerator import MazeGenerator
 from maze.maze_adapter import MazeAdapter
-from maze.maze_entities import Player, RedGhost
+from maze.player import Player
+from maze.ghosts import RedGhost, PinkGhost, BlueGhost, OrangeGhost
 import math
 from enum import Enum
 
@@ -51,7 +52,17 @@ class Engine:
 
         red_x, red_y = self.maze_adapter.corners[0]
         red_px, red_py = self.maze_adapter.cell_to_pixel(red_x, red_y)
-        self.red_ghost = RedGhost(red_x, red_y, red_px, red_py, 3, self.maze_adapter)
+        blue_x, blue_y = self.maze_adapter.corners[1]
+        blue_px, blue_py = self.maze_adapter.cell_to_pixel(blue_x, blue_y)
+        pink_x, pink_y = self.maze_adapter.corners[2]
+        pink_px, pink_py = self.maze_adapter.cell_to_pixel(pink_x, pink_y)
+        orange_x, orange_y = self.maze_adapter.corners[3]
+        orange_px, orange_py = self.maze_adapter.cell_to_pixel(orange_x, orange_y)
+        self.red_ghost = RedGhost(red_x, red_y, red_px, red_py, 2, self.maze_adapter)
+        self.blue_ghost = PinkGhost(blue_x, blue_y, blue_px, blue_py, 2, self.maze_adapter)
+        self.orange_ghost = OrangeGhost(orange_x, orange_y, orange_px, orange_py, 2, self.maze_adapter)
+        self.pink_ghost = BlueGhost(pink_x, pink_y, pink_px, pink_py, 2, self.maze_adapter)
+
 
     def eject_player_from_walls(self):
         if (
@@ -87,6 +98,9 @@ class Engine:
             return True
         return False
 
+    def _load_images(self):
+        pass
+
     def _game_loop(self):
         # hadi ghi vibe coditha mafiyach li yfhamha hta nchofo drari kidaro lplayer wndiro b7alhom
         def draw_filled_arc(
@@ -121,13 +135,26 @@ class Engine:
         menu_bg = pygame.transform.scale(
             menu_bg, (screen_width, screen_height)
         )
+        red_ghost = pygame.image.load("assets/ghost_images/red.png")
+        red_ghost = pygame.transform.scale(
+            red_ghost, (self.cell_size - self.cell_size // 4, self.cell_size - self.cell_size // 4)
+        )
+        pink_ghost = pygame.image.load("assets/ghost_images/pink.png")
+        pink_ghost = pygame.transform.scale(
+            pink_ghost, (self.cell_size - self.cell_size // 4, self.cell_size - self.cell_size // 4)
+        )
+        blue_ghost = pygame.image.load("assets/ghost_images/blue.png")
+        blue_ghost = pygame.transform.scale(
+            blue_ghost, (self.cell_size - self.cell_size // 4, self.cell_size - self.cell_size // 4)
+        )
+        orange_ghost = pygame.image.load("assets/ghost_images/orange.png")
+        orange_ghost = pygame.transform.scale(
+            orange_ghost, (self.cell_size - self.cell_size // 4, self.cell_size - self.cell_size // 4)
+        )
         selected_index = 0
         self.eject_player_from_walls()
 
-        ghost = pygame.image.load("assets/ghost_images/red.png")
-        ghost = pygame.transform.scale(
-            ghost, (self.cell_size - self.cell_size // 4, self.cell_size - self.cell_size // 4)
-        )
+        
 
 
         while running:
@@ -233,7 +260,11 @@ class Engine:
                         self.maze_adapter._render_maze(
                             cell_value, col_index, row_index, self.screen
                         )
-                self.screen.blit(ghost, (self.red_ghost.pixel_x + self.cell_size // 8, self.red_ghost.pixel_y + self.cell_size // 8))
+                self.screen.blit(red_ghost, (self.red_ghost.pixel_x + self.cell_size // 8, self.red_ghost.pixel_y + self.cell_size // 8))
+                self.screen.blit(pink_ghost, (self.pink_ghost.pixel_x + self.cell_size // 8, self.pink_ghost.pixel_y + self.cell_size // 8))
+                self.screen.blit(orange_ghost, (self.orange_ghost.pixel_x + self.cell_size // 8, self.orange_ghost.pixel_y + self.cell_size // 8))
+                self.screen.blit(blue_ghost, (self.blue_ghost.pixel_x + self.cell_size // 8, self.blue_ghost.pixel_y + self.cell_size // 8))
+
                 keys = pygame.key.get_pressed()
 
                 if keys[pygame.K_w]:
@@ -259,7 +290,10 @@ class Engine:
                 )
                 # ##############
                 self.player.update(delta_time, self)
-                self.red_ghost.update(delta_time)
+                self.red_ghost.update(delta_time, self.player)
+                self.blue_ghost.update(delta_time, self.player)
+                self.orange_ghost.update(delta_time, self.player)
+                self.pink_ghost.update(delta_time, self.player)
                 if self.check_win():
                     running = False
                     continue
