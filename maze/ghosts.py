@@ -70,26 +70,23 @@ class Ghost:
         #     self.pixel_y += (dy / dist) * step
 
     def _shortest_path_next_step(self, start, goal):
-        """BFS over the real maze (so it respects actual walls). Returns
-        the cell adjacent to `start` to move into next, or None if
-        start == goal or no path currently exists."""
         if start == goal:
             return None
-        came_from = {start: None}
-        frontier = deque([start])
-        while frontier:
-            current = frontier.popleft()
-            if current == goal:
+        d = {start: None}
+        queue = deque([start])
+        while queue:
+            x, y = queue.popleft()
+            if (x, y) == goal:
                 break
-            for neighbor in self.maze_adapter.neighbors(*current):
-                if neighbor not in came_from:
-                    came_from[neighbor] = current
-                    frontier.append(neighbor)
-        if goal not in came_from:
+            for neighbor in self.maze_adapter.neighbors(x, y):
+                if neighbor not in d:
+                    d[neighbor] = (x, y)
+                    queue.append(neighbor)
+        if goal not in d:
             return None
         step = goal
-        while came_from[step] != start:
-            step = came_from[step]
+        while d[step] != start:
+            step = d[step]
         return step
 
     def chase_player(self, delta_time, player):
