@@ -292,6 +292,7 @@ class Engine:
             self.blue_ghost.normal_mode("assets/ghost_images/blue.png")
             self.orange_ghost.normal_mode("assets/ghost_images/orange.png")
             self.pink_ghost.normal_mode("assets/ghost_images/pink.png")
+        # ## kola ghost ntchiki wach tkal
 
     def _update_playing(self, delta_time):
         """Renders and updates one frame of gameplay. Returns False when
