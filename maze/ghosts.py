@@ -264,6 +264,7 @@ class Ghost:
             ),
         )
 
+
 class RedGhost(Ghost):
     def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter):
         super().__init__(x, y, pixel_x, pixel_y, speed, maze_adapter)
