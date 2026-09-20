@@ -1,3 +1,7 @@
+import time
+import pygame
+
+
 class Player:
     def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter):
         self.cell_x = x
@@ -17,7 +21,6 @@ class Player:
 
         self.start_angle = 20
         self.end_angle = 340
-        self.flag = 1
 
     def get_cor(self, direction):
         if direction == 1:
@@ -42,18 +45,10 @@ class Player:
             return True
         return False
 
-    def update(self, delta_time, engine):
-        if self.flag == 1:
-            self.start_angle += 120 * delta_time
-            self.end_angle -= 120 * delta_time
-            if self.start_angle >= 45:
-                self.flag = 0
-        else:
-            self.start_angle -= 120 * delta_time
-            self.end_angle += 120 * delta_time
-            if self.start_angle <= 5:
-                self.flag = 1
+    def eat_ghost(self, x, y):
+        pass
 
+    def update(self, delta_time, engine):
         step = self.speed * self.maze_adapter.cell_size * delta_time
         dx = self.target_px - self.pixel_x
         dy = self.target_py - self.pixel_y
@@ -67,10 +62,11 @@ class Player:
 
             if self.eat_pacgum(self.cell_x, self.cell_y):
                 engine.score += 1
-                print(engine.score)
             if self.eat_super_pacgum(self.cell_x, self.cell_y):
                 engine.score += 100
-                print(engine.score)
+                engine.super_power = True
+                engine.start_time = time.perf_counter()
+
             if self.next_dir and self.maze_adapter.can_move(
                 self.cell_x, self.cell_y, self.next_dir
             ):
@@ -88,8 +84,19 @@ class Player:
                         self.target_cell_x, self.target_cell_y
                     )
                 )
-
+            engine.end_time = time.perf_counter()
+            if engine.end_time - engine.start_time >= 5:
+                engine.super_power = False
         else:
             self.pixel_x += (dx / dist) * step
             self.pixel_y += (dy / dist) * step
 
+    def draw_player(self, png):
+        self.sprite = pygame.image.load(png)
+        self.sprite = pygame.transform.scale(
+            self.sprite,
+            (
+                self.maze_adapter.cell_size - self.maze_adapter.cell_size // 4,
+                self.maze_adapter.cell_size - self.maze_adapter.cell_size // 4,
+            ),
+        )
