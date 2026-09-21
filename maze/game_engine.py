@@ -62,25 +62,53 @@ class Engine:
 
         red_x, red_y = self.maze_adapter.corners[0]
         red_px, red_py = self.maze_adapter.cell_to_pixel(red_x, red_y)
+
         blue_x, blue_y = self.maze_adapter.corners[1]
         blue_px, blue_py = self.maze_adapter.cell_to_pixel(blue_x, blue_y)
+
         pink_x, pink_y = self.maze_adapter.corners[2]
         pink_px, pink_py = self.maze_adapter.cell_to_pixel(pink_x, pink_y)
+
         orange_x, orange_y = self.maze_adapter.corners[3]
         orange_px, orange_py = self.maze_adapter.cell_to_pixel(
             orange_x, orange_y
         )
+
         self.red_ghost = RedGhost(
-            red_x, red_y, red_px, red_py, 2, self.maze_adapter
+            red_x,
+            red_y,
+            red_px,
+            red_py,
+            2,
+            self.maze_adapter,
+            "assets/ghost_images/red.png",
         )
-        self.blue_ghost = PinkGhost(
-            blue_x, blue_y, blue_px, blue_py, 2, self.maze_adapter
+        self.blue_ghost = BlueGhost(
+            blue_x,
+            blue_y,
+            blue_px,
+            blue_py,
+            2,
+            self.maze_adapter,
+            "assets/ghost_images/blue.png",
         )
         self.orange_ghost = OrangeGhost(
-            orange_x, orange_y, orange_px, orange_py, 2, self.maze_adapter
+            orange_x,
+            orange_y,
+            orange_px,
+            orange_py,
+            2,
+            self.maze_adapter,
+            "assets/ghost_images/orange.png",
         )
-        self.pink_ghost = BlueGhost(
-            pink_x, pink_y, pink_px, pink_py, 2, self.maze_adapter
+        self.pink_ghost = PinkGhost(
+            pink_x,
+            pink_y,
+            pink_px,
+            pink_py,
+            2,
+            self.maze_adapter,
+            "assets/ghost_images/pink.png",
         )
         self.player_images = [
             "assets/player_images/1.png",
@@ -249,15 +277,15 @@ class Engine:
         self.screen.blit(
             self.blue_ghost.sprite,
             (
-                self.orange_ghost.pixel_x + self.cell_size // 8,
-                self.orange_ghost.pixel_y + self.cell_size // 8,
+                self.blue_ghost.pixel_x + self.cell_size // 8,
+                self.blue_ghost.pixel_y + self.cell_size // 8,
             ),
         )
         self.screen.blit(
             self.orange_ghost.sprite,
             (
-                self.blue_ghost.pixel_x + self.cell_size // 8,
-                self.blue_ghost.pixel_y + self.cell_size // 8,
+                self.orange_ghost.pixel_x + self.cell_size // 8,
+                self.orange_ghost.pixel_y + self.cell_size // 8,
             ),
         )
 
@@ -283,15 +311,32 @@ class Engine:
 
     def _apply_ghost_mode(self):
         if self.super_power:
-            self.red_ghost.scare_mode()
-            self.blue_ghost.scare_mode()
-            self.orange_ghost.scare_mode()
-            self.pink_ghost.scare_mode()
+            if not self.red_ghost.return_in_life:
+                self.red_ghost.scare_mode()
+            else:
+                self.red_ghost.normal_mode()
+            if not self.blue_ghost.return_in_life:
+                self.blue_ghost.scare_mode()
+            else:
+                self.blue_ghost.normal_mode()
+            if not self.orange_ghost.return_in_life:
+                self.orange_ghost.scare_mode()
+            else:
+                self.orange_ghost.normal_mode()
+            if not self.pink_ghost.return_in_life:
+                self.pink_ghost.scare_mode()
+            else:
+                self.pink_ghost.normal_mode()
         else:
-            self.red_ghost.normal_mode("assets/ghost_images/red.png")
-            self.blue_ghost.normal_mode("assets/ghost_images/blue.png")
-            self.orange_ghost.normal_mode("assets/ghost_images/orange.png")
-            self.pink_ghost.normal_mode("assets/ghost_images/pink.png")
+            self.red_ghost.return_in_life = False
+            self.orange_ghost.return_in_life = False
+            self.blue_ghost.return_in_life = False
+            self.pink_ghost.return_in_life = False
+
+            self.red_ghost.normal_mode()
+            self.blue_ghost.normal_mode()
+            self.orange_ghost.normal_mode()
+            self.pink_ghost.normal_mode()
         # ## kola ghost ntchiki wach tkal
 
     def _update_playing(self, delta_time):

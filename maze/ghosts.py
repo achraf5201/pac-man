@@ -2,10 +2,11 @@ import random
 from collections import deque
 import sys
 import pygame
+import time
 
 
 class Ghost:
-    def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter):
+    def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter, png):
         self.cell_x = x
         self.cell_y = y
         self.source_x = x
@@ -14,6 +15,8 @@ class Ghost:
         self.pixel_y = pixel_y
         self.speed = speed
         self.maze_adapter = maze_adapter
+
+        self.png = png
 
         self.current_dir = None
         self.next_dir = None
@@ -29,8 +32,11 @@ class Ghost:
         self.run = False
         self.random_move = True
         self.ghost_dead = False
+        self.return_in_life = False
 
         self.seen = deque()
+        self.start_time = 0
+        self.end_time = 0
 
         self.range = []
 
@@ -132,7 +138,7 @@ class Ghost:
             self.pixel_x += (dx / dist) * step
             self.pixel_y += (dy / dist) * step
 
-    def dead(self, delta_time):
+    def dead_and_return(self, delta_time):
         step = 10 * self.maze_adapter.cell_size * delta_time
 
         dx = self.target_px - self.pixel_x
@@ -150,6 +156,8 @@ class Ghost:
             )
             if next_cell is None:
                 self.ghost_dead = False
+                self.return_in_life = True
+                self.end_time = time.perf_counter()
                 return
             x, y = next_cell
             dir_x, dir_y = self.get_dir(x, y)
@@ -167,7 +175,54 @@ class Ghost:
     def ghosts_running(self, delta_time, player):
         if player.cell_x == self.cell_x and player.cell_y == self.cell_y:
             self.ghost_dead = True
-            self.dead_mode()
+            self.start_time = time.perf_counter()
+        if (player.cell_x, player.cell_y) in self.range:
+            step = self.speed * self.maze_adapter.cell_size * delta_time
+            dx = self.target_px - self.pixel_x
+            dy = self.target_py - self.pixel_y
+            dist = (dx**2 + dy**2) ** 0.5
+
+            if dist <= step:
+                self.cell_x = self.target_cell_x
+                self.cell_y = self.target_cell_y
+                self.pixel_x = self.target_px
+                self.pixel_y = self.target_py
+
+                neighbors = self.maze_adapter.neighbors(
+                    self.cell_x, self.cell_y
+                )
+
+                best_neighbor = None
+                best_distance = -1
+
+                for n in neighbors:
+                    nx, ny = n
+
+                    path = self._shortest_path(
+                        (nx, ny), (player.cell_x, player.cell_y)
+                    )
+
+                    if path and len(path) > best_distance:
+                        best_distance = len(path)
+                        best_neighbor = (nx, ny)
+
+                next_cell = best_neighbor
+                x, y = next_cell
+                dir_x, dir_y = self.get_dir(x, y)
+
+                self.target_cell_x = self.cell_x + dir_x
+                self.target_cell_y = self.cell_y + dir_y
+
+                self.target_px, self.target_py = (
+                    self.maze_adapter.cell_to_pixel(
+                        self.target_cell_x, self.target_cell_y
+                    )
+                )
+            else:
+                self.pixel_x += (dx / dist) * step
+                self.pixel_y += (dy / dist) * step
+        else:
+            self.ghosts_random_move(delta_time)
 
     def ghosts_random_move(self, delta_time):
         step = self.speed * self.maze_adapter.cell_size * delta_time
@@ -228,7 +283,7 @@ class Ghost:
         if self.run:
             self.ghosts_running(delta_time, player)
         if self.ghost_dead:
-            self.dead(delta_time)
+            self.dead_and_return(delta_time)
 
     def scare_mode(self):
         self.sprite = pygame.image.load("assets/ghost_images/powerup.png")
@@ -241,9 +296,11 @@ class Ghost:
         )
         self.run = True
         self.random_move = False
+        if self.ghost_dead and self.end_time - self.start_time <= 5:
+            self.dead_mode()
 
-    def normal_mode(self, png):
-        self.sprite = pygame.image.load(png)
+    def normal_mode(self):
+        self.sprite = pygame.image.load(self.png)
         self.sprite = pygame.transform.scale(
             self.sprite,
             (
@@ -266,8 +323,8 @@ class Ghost:
 
 
 class RedGhost(Ghost):
-    def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter):
-        super().__init__(x, y, pixel_x, pixel_y, speed, maze_adapter)
+    def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter, png):
+        super().__init__(x, y, pixel_x, pixel_y, speed, maze_adapter, png)
         self.sprite = pygame.image.load("assets/ghost_images/red.png")
         self.sprite = pygame.transform.scale(
             self.sprite,
@@ -279,8 +336,8 @@ class RedGhost(Ghost):
 
 
 class PinkGhost(Ghost):
-    def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter):
-        super().__init__(x, y, pixel_x, pixel_y, speed, maze_adapter)
+    def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter, png):
+        super().__init__(x, y, pixel_x, pixel_y, speed, maze_adapter, png)
         self.sprite = pygame.image.load("assets/ghost_images/pink.png")
         self.sprite = pygame.transform.scale(
             self.sprite,
@@ -292,8 +349,8 @@ class PinkGhost(Ghost):
 
 
 class BlueGhost(Ghost):
-    def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter):
-        super().__init__(x, y, pixel_x, pixel_y, speed, maze_adapter)
+    def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter, png):
+        super().__init__(x, y, pixel_x, pixel_y, speed, maze_adapter, png)
         self.sprite = pygame.image.load("assets/ghost_images/blue.png")
         self.sprite = pygame.transform.scale(
             self.sprite,
@@ -305,8 +362,8 @@ class BlueGhost(Ghost):
 
 
 class OrangeGhost(Ghost):
-    def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter):
-        super().__init__(x, y, pixel_x, pixel_y, speed, maze_adapter)
+    def __init__(self, x, y, pixel_x, pixel_y, speed, maze_adapter, png):
+        super().__init__(x, y, pixel_x, pixel_y, speed, maze_adapter, png)
         self.sprite = pygame.image.load("assets/ghost_images/orange.png")
         self.sprite = pygame.transform.scale(
             self.sprite,
