@@ -11,6 +11,10 @@ class MazeAdapter(MazeModel):
         self.cell_size = cell_size
         self.offset_x = 0
         self.offset_y = 0
+        
+        pygame.font.init()
+        self.font = pygame.font.SysFont(None, 36)
+
         self.pacgum = []
         for i in range(self.height):
             row = []
@@ -25,6 +29,7 @@ class MazeAdapter(MazeModel):
                 else:
                     row.append(1)
             self.pacgum.append(row)
+            
         self.super_pacgum = []
         for i in range(self.height):
             row = []
@@ -69,29 +74,18 @@ class MazeAdapter(MazeModel):
             self.screen_height - (self.height * self.cell_size)
         ) // 2
 
-    def _render_hud(self, score=0, lives=3, level=0):
-        HUD_HEIGHT = 79
-        HUD_WEIGHT = 500
-        width = HUD_WEIGHT * 3
-        height = (self.height * self.cell_size) + HUD_HEIGHT
-        if width >= self.screen_width or height >= self.screen_height:
-            print(
-                "Error: maze is too large for the current screen "
-                "resolution."
-            )
-            sys.exit(1)
+    def _render_hud(self, screen, score=0, lives=3, level=0):
+        if not hasattr(self, 'font'):
+            pygame.font.init()
+            self.font = pygame.font.SysFont(None, 36)
+
         start_pointx = self.offset_x
-        start_pointy = (
-            self.offset_y + (self.height * self.cell_size) + HUD_HEIGHT // 10
-        )
-        self.hud_text.x = start_pointx
-        self.hud_text.y = start_pointy
-        self.hud_text.text = (
-            f"Score: {score}\t\t\t\t\t\t\t\t\t\t\t\t"
-            f" Lives: {lives}\t\t\t\t\t\t\t\t\t\t\t\t\t\t"
-            f" Level: {level}"
-        )
-        self.hud_text.draw()
+        start_pointy = self.offset_y - 40 
+        
+        hud_string = f"Score: {score}          Lives: {lives}          Level: {level}"
+        text_surface = self.font.render(hud_string, True, (255, 255, 255))
+        
+        screen.blit(text_surface, (start_pointx, start_pointy))
 
     def _render_maze(self, cell_value, x, y, screen):
         pix, piy = self.cell_to_pixel(x, y)
@@ -104,6 +98,7 @@ class MazeAdapter(MazeModel):
                 "resolution."
             )
             sys.exit(1)
+            
         if cell_value == 15:
             pygame.draw.rect(
                 screen,
@@ -129,3 +124,11 @@ class MazeAdapter(MazeModel):
 
         if cell_value & 8:
             pygame.draw.rect(screen, "blue", (pix, piy, 4, self.cell_size))
+
+        center_x = pix + (self.cell_size // 2)
+        center_y = piy + (self.cell_size // 2)
+
+        if self.pacgum[y][x] == 1:
+            pygame.draw.circle(screen, (255, 255, 255), (center_x, center_y), 4)
+        elif self.super_pacgum[y][x] == 1:
+            pygame.draw.circle(screen, (255, 255, 255), (center_x, center_y), 10)

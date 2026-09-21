@@ -178,7 +178,7 @@ class Engine:
                         if selected_index == 0:
                             current_state = GameState.PLAYING
                         elif selected_index == 1:
-                            current_state = GameState.CREDITSindex
+                            current_state = GameState.CREDITS
                         elif selected_index == 2:
                             current_state = GameState.SETTINGS
                         elif selected_index == 3:
@@ -372,6 +372,10 @@ class Engine:
             return False
 
         return True
+    
+    def _render_settings(self):
+        ...
+    
 
     def _game_loop(self):
         running = True
@@ -407,14 +411,25 @@ class Engine:
                     screen_height,
                 )
             elif current_state == GameState.PLAYING:
+                
                 if not self._update_playing(delta_time):
                     running = False
                     continue
             elif current_state == GameState.SETTINGS:
                 self.screen.blit(menu_bg, (0, 0))
+
+
+
             elif current_state == GameState.CREDITS:
                 self._render_credits(menu_font, screen_width, screen_height)
-
+            
+            if current_state == GameState.PLAYING:
+                self.maze_adapter._render_hud(
+                    self.screen, 
+                    score=self.score, 
+                    lives=self.life, 
+                    level=self.level
+                )
             pygame.display.flip()
 
         pygame.quit()
