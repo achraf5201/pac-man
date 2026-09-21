@@ -118,6 +118,11 @@ class Engine:
         )
         self.var = 0
         self.index = 0
+        self.cheat_invincibility = False
+        self.cheat_ghost_freeze = False
+        self.cheat_speed = False
+        self.force_win = False
+        self.settings_index = 0
 
     def eject_player_from_walls(self):
         if (
@@ -184,10 +189,42 @@ class Engine:
                         elif selected_index == 3:
                             running = False
 
+                elif current_state == GameState.SETTINGS:
+                    if event.key == pygame.K_UP:
+                        self.settings_index = (self.settings_index - 1) % len(self.settings_options)
+                    elif event.key == pygame.K_DOWN:
+                        self.settings_index = (self.settings_index + 1) % len(self.settings_options)
+                    elif event.key == pygame.K_RETURN:
+                        
+                        if self.settings_index == 0:
+                            self.cheat_invincibility = not self.cheat_invincibility
+                            
+                        elif self.settings_index == 1:
+                            self.cheat_ghost_freeze = not self.cheat_ghost_freeze
+                            
+                        elif self.settings_index == 2:
+                            self.cheat_speed = not self.cheat_speed
+                            self.player.speed = 8 if self.cheat_speed else 4
+                            
+                        elif self.settings_index == 3:
+                            self.life += 1
+                            
+                        elif self.settings_index == 4:
+                            self.force_win = True
+                            current_state = GameState.PLAYING
+                            self.settings_index = 0
+                            
+                        elif self.settings_index == 5:
+                            current_state = GameState.MAIN_MENU
+                            self.settings_index = 0
+                            
+                    elif event.key == pygame.K_ESCAPE:
+                        current_state = GameState.MAIN_MENU
+                        self.settings_index = 0
+
                 elif current_state in [
                     GameState.PLAYING,
                     GameState.CREDITS,
-                    GameState.SETTINGS,
                 ]:
                     if event.key == pygame.K_ESCAPE:
                         current_state = GameState.MAIN_MENU
@@ -306,10 +343,12 @@ class Engine:
 
     def _update_entities(self, delta_time):
         self.player.update(delta_time, self)
-        self.red_ghost.update(delta_time, self.player)
-        self.blue_ghost.update(delta_time, self.player)
-        self.orange_ghost.update(delta_time, self.player)
-        self.pink_ghost.update(delta_time, self.player)
+        
+        if not self.cheat_ghost_freeze:
+            self.red_ghost.update(delta_time, self.player)
+            self.blue_ghost.update(delta_time, self.player)
+            self.orange_ghost.update(delta_time, self.player)
+            self.pink_ghost.update(delta_time, self.player)
 
     def _apply_ghost_mode(self):
         if self.super_power:
@@ -367,15 +406,43 @@ class Engine:
         self._update_entities(delta_time)
         self._apply_ghost_mode()
 
-        if self.check_win():
+        if self.check_win() or self.force_win:
             print("YOU WIN")
+            self.force_win = False
             return False
 
         return True
     
-    def _render_settings(self):
-        ...
-    
+
+    def _render_settings(self, menu_bg, menu_font, screen_width, screen_height):
+        self.screen.blit(menu_bg, (0, 0))
+        title_surface = menu_font.render("CHEAT MODE (PEER REVIEW)", True, (0, 255, 255))
+        self.screen.blit(
+            title_surface,
+            (screen_width // 2 - 200, screen_height // 2 - 250),
+        )
+
+        self.settings_options = [
+            f"1. INVINCIBILITY: {'ON' if self.cheat_invincibility else 'OFF'}",
+            f"2. GHOST FREEZE: {'ON' if self.cheat_ghost_freeze else 'OFF'}",
+            f"3. INCREASED SPEED: {'ON' if self.cheat_speed else 'OFF'}",
+            "4. ADD EXTRA LIFE (+1)",
+            "5. SKIP LEVEL (INSTANT WIN)",
+            "BACK"
+        ]
+
+        for index, option in enumerate(self.settings_options):
+            if index == self.settings_index:
+                color = (255, 255, 0)
+            else:
+                color = (255, 255, 255)
+
+            text_surface = menu_font.render(option, True, color)
+            x_pos = screen_width // 2 - 180
+            y_pos = (screen_height // 2 - 150) + (index * 50)
+
+            self.screen.blit(text_surface, (x_pos, y_pos))
+
 
     def _game_loop(self):
         running = True
@@ -416,8 +483,7 @@ class Engine:
                     running = False
                     continue
             elif current_state == GameState.SETTINGS:
-                self.screen.blit(menu_bg, (0, 0))
-
+                self._render_settings(menu_bg, menu_font, screen_width, screen_height)
 
 
             elif current_state == GameState.CREDITS:
