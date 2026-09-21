@@ -48,6 +48,9 @@ class Player:
     def eat_ghost(self, x, y):
         pass
 
+    def rotate_sprite(self):
+        self.sprite
+
     def update(self, delta_time, engine):
         step = self.speed * self.maze_adapter.cell_size * delta_time
         dx = self.target_px - self.pixel_x
@@ -76,6 +79,7 @@ class Player:
             if self.current_dir and self.maze_adapter.can_move(
                 self.cell_x, self.cell_y, self.current_dir
             ):
+                self.rotate_sprite()
                 dir_x, dir_y = self.get_cor(self.current_dir)
                 self.target_cell_x = self.cell_x + dir_x
                 self.target_cell_y = self.cell_y + dir_y
@@ -92,6 +96,7 @@ class Player:
             self.pixel_y += (dy / dist) * step
 
     def draw_player(self, png):
+
         self.sprite = pygame.image.load(png)
         self.sprite = pygame.transform.scale(
             self.sprite,
@@ -100,3 +105,50 @@ class Player:
                 self.maze_adapter.cell_size - self.maze_adapter.cell_size // 4,
             ),
         )
+
+        if self.current_dir == 2:
+            self.sprite = pygame.transform.scale(
+                self.sprite,
+                (
+                    self.maze_adapter.cell_size
+                    - self.maze_adapter.cell_size // 4,
+                    self.maze_adapter.cell_size
+                    - self.maze_adapter.cell_size // 4,
+                ),
+            )
+
+        elif self.current_dir == 8:
+            self.sprite = pygame.transform.flip(self.sprite, True, False)
+            self.sprite = pygame.transform.scale(
+                self.sprite,
+                (
+                    self.maze_adapter.cell_size
+                    - self.maze_adapter.cell_size // 4,
+                    self.maze_adapter.cell_size
+                    - self.maze_adapter.cell_size // 4,
+                ),
+            )
+
+        elif self.current_dir == 4:
+            self.sprite = pygame.transform.rotate(self.sprite, -90)
+            self.sprite = pygame.transform.scale(
+                self.sprite,
+                (
+                    self.maze_adapter.cell_size
+                    - self.maze_adapter.cell_size // 4,
+                    self.maze_adapter.cell_size
+                    - self.maze_adapter.cell_size // 4,
+                ),
+            )
+
+        elif self.current_dir == 1:
+            self.sprite = pygame.transform.rotate(self.sprite, 90)
+            self.sprite = pygame.transform.scale(
+                self.sprite,
+                (
+                    self.maze_adapter.cell_size
+                    - self.maze_adapter.cell_size // 4,
+                    self.maze_adapter.cell_size
+                    - self.maze_adapter.cell_size // 4,
+                ),
+            )

@@ -7,23 +7,22 @@ import math
 from enum import Enum
 import time
 
-
 # hadi an7aydoha w andiro tssawer yloopi 3lihom
-def draw_filled_arc(
-    surface, color, center, radius, start_angle_deg, stop_angle_deg
-):
-    """Draws a filled pie-slice/arc on a surface."""
-    points = [center]
-    for degree in range(start_angle_deg, stop_angle_deg + 1):
-        radians = math.radians(degree)
+# def draw_filled_arc(
+#     surface, color, center, radius, start_angle_deg, stop_angle_deg
+# ):
+#     """Draws a filled pie-slice/arc on a surface."""
+#     points = [center]
+#     for degree in range(start_angle_deg, stop_angle_deg + 1):
+#         radians = math.radians(degree)
 
-        x = center[0] + radius * math.cos(radians)
-        y = center[1] - radius * math.sin(radians)
+#         x = center[0] + radius * math.cos(radians)
+#         y = center[1] - radius * math.sin(radians)
 
-        points.append((x, y))
+#         points.append((x, y))
 
-    if len(points) > 2:
-        pygame.draw.polygon(surface, color, points)
+#     if len(points) > 2:
+#         pygame.draw.polygon(surface, color, points)
 
 
 class GameState(Enum):
@@ -59,6 +58,13 @@ class Engine:
         c_x, c_y = self.maze_adapter.center
         c_px, c_py = self.maze_adapter.cell_to_pixel(c_x, c_y)
         self.player = Player(c_x, c_y, c_px, c_py, 4, self.maze_adapter)
+        self.player_images = [
+            "assets/player_images/1.png",
+            "assets/player_images/2.png",
+            "assets/player_images/3.png",
+            "assets/player_images/4.png"
+        ]
+        self.player_image = "assets/player_images/1.png"
 
         red_x, red_y = self.maze_adapter.corners[0]
         red_px, red_py = self.maze_adapter.cell_to_pixel(red_x, red_y)
@@ -110,12 +116,8 @@ class Engine:
             self.maze_adapter,
             "assets/ghost_images/pink.png",
         )
-        self.player_images = [
-            "assets/player_images/1.png",
-            "assets/player_images/2.png",
-            "assets/player_images/3.png",
-        ]
-        self.player_image = "assets/player_images/1.png"
+        self.var = 0
+        self.index = 0
 
     def eject_player_from_walls(self):
         if (
@@ -292,14 +294,14 @@ class Engine:
     def _read_player_input(self):
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_w]:
+        if keys[pygame.K_w] or keys[pygame.K_UP]:
             self.player.next_dir = 1
-        elif keys[pygame.K_s]:
+        elif keys[pygame.K_s] or keys[pygame.K_DOWN]:
             self.player.next_dir = 4
 
-        if keys[pygame.K_a]:
+        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
             self.player.next_dir = 8
-        elif keys[pygame.K_d]:
+        elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             self.player.next_dir = 2
 
     def _update_entities(self, delta_time):
@@ -337,7 +339,6 @@ class Engine:
             self.blue_ghost.normal_mode()
             self.orange_ghost.normal_mode()
             self.pink_ghost.normal_mode()
-        # ## kola ghost ntchiki wach tkal
 
     def _update_playing(self, delta_time):
         """Renders and updates one frame of gameplay. Returns False when
@@ -348,8 +349,13 @@ class Engine:
         self._draw_ghost_sprites()
 
         self._read_player_input()
-
-        self.player.draw_player(self.player_image)
+        self.var += delta_time
+        if self.var >= 0.1:
+            self.var = 0
+            self.index = (self.index + 1) % len(self.player_images)
+            self.player.draw_player(self.player_images[self.index])
+        else:
+            self.player.draw_player(self.player_images[self.index])
         self.screen.blit(
             self.player.sprite,
             (
