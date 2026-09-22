@@ -20,7 +20,6 @@ class MazeAdapter(MazeModel):
             row = []
             for j in range(self.width):                
                 is_corner = i in (0, self.height - 1) and j in (0, self.width - 1)
-                
                 if is_corner or self.walls[i][j] in (15, 42):
                     row.append(0)
                 else:
