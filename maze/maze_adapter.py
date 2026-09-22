@@ -18,28 +18,21 @@ class MazeAdapter(MazeModel):
         self.pacgum = []
         for i in range(self.height):
             row = []
-            for j in range(self.width):
-                if (
-                    (i == 0 and j == 0)
-                    or (i == 0 and j == self.width - 1)
-                    or (i == self.height - 1 and j == 0)
-                    or (i == self.height - 1 and j == self.width - 1)
-                ) or self.walls[i][j] == 15:
+            for j in range(self.width):                
+                is_corner = i in (0, self.height - 1) and j in (0, self.width - 1)
+                
+                if is_corner or self.walls[i][j] in (15, 42):
                     row.append(0)
                 else:
                     row.append(1)
+                    
             self.pacgum.append(row)
             
         self.super_pacgum = []
         for i in range(self.height):
             row = []
             for j in range(self.width):
-                if (
-                    (i == 0 and j == 0)
-                    or (i == 0 and j == self.width - 1)
-                    or (i == self.height - 1 and j == 0)
-                    or (i == self.height - 1 and j == self.width - 1)
-                ):
+                if i in (0, self.height - 1) and j in (0, self.width - 1):
                     row.append(1)
                 else:
                     row.append(0)
