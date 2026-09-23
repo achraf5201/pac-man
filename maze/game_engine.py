@@ -3,26 +3,7 @@ from mazegenerator import MazeGenerator
 from maze.maze_adapter import MazeAdapter
 from maze.player import Player
 from maze.ghosts import RedGhost, PinkGhost, BlueGhost, OrangeGhost
-import math
 from enum import Enum
-import time
-
-# hadi an7aydoha w andiro tssawer yloopi 3lihom
-# def draw_filled_arc(
-#     surface, color, center, radius, start_angle_deg, stop_angle_deg
-# ):
-#     """Draws a filled pie-slice/arc on a surface."""
-#     points = [center]
-#     for degree in range(start_angle_deg, stop_angle_deg + 1):
-#         radians = math.radians(degree)
-
-#         x = center[0] + radius * math.cos(radians)
-#         y = center[1] - radius * math.sin(radians)
-
-#         points.append((x, y))
-
-#     if len(points) > 2:
-#         pygame.draw.polygon(surface, color, points)
 
 
 class GameState(Enum):
@@ -62,7 +43,7 @@ class Engine:
             "assets/player_images/1.png",
             "assets/player_images/2.png",
             "assets/player_images/3.png",
-            "assets/player_images/4.png"
+            "assets/player_images/4.png",
         ]
         self.player_image = "assets/player_images/1.png"
 
@@ -162,20 +143,24 @@ class Engine:
         pass
 
     def _handle_events(self, current_state, selected_index, menu_options):
-  
+
         running = True
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
             elif event.type == pygame.KEYDOWN:
-                
+
                 # main_menu
                 if current_state == GameState.MAIN_MENU:
                     if event.key == pygame.K_UP:
-                        selected_index = (selected_index - 1) % len(menu_options)
+                        selected_index = (selected_index - 1) % len(
+                            menu_options
+                        )
                     elif event.key == pygame.K_DOWN:
-                        selected_index = (selected_index + 1) % len(menu_options)
+                        selected_index = (selected_index + 1) % len(
+                            menu_options
+                        )
                     elif event.key == pygame.K_RETURN:
                         if selected_index == 0:
                             current_state = GameState.PLAYING
@@ -189,14 +174,22 @@ class Engine:
                 # settings events
                 elif current_state == GameState.SETTINGS:
                     if event.key == pygame.K_UP:
-                        self.settings_index = (self.settings_index - 1) % len(self.settings_options)
+                        self.settings_index = (self.settings_index - 1) % len(
+                            self.settings_options
+                        )
                     elif event.key == pygame.K_DOWN:
-                        self.settings_index = (self.settings_index + 1) % len(self.settings_options)
+                        self.settings_index = (self.settings_index + 1) % len(
+                            self.settings_options
+                        )
                     elif event.key == pygame.K_RETURN:
                         if self.settings_index == 0:
-                            self.cheat_invincibility = not self.cheat_invincibility
+                            self.cheat_invincibility = (
+                                not self.cheat_invincibility
+                            )
                         elif self.settings_index == 1:
-                            self.cheat_ghost_freeze = not self.cheat_ghost_freeze
+                            self.cheat_ghost_freeze = (
+                                not self.cheat_ghost_freeze
+                            )
                         elif self.settings_index == 2:
                             self.cheat_speed = not self.cheat_speed
                             self.player.speed = 8 if self.cheat_speed else 4
@@ -224,7 +217,7 @@ class Engine:
                         current_state = GameState.MAIN_MENU
                     elif event.key == pygame.K_p:
                         current_state = GameState.PAUSE
-                
+
                 # pause
                 elif current_state == GameState.PAUSE:
                     if event.key == pygame.K_p:
@@ -344,7 +337,7 @@ class Engine:
 
     def _update_entities(self, delta_time):
         self.player.update(delta_time, self)
-        
+
         if not self.cheat_ghost_freeze:
             self.red_ghost.update(delta_time, self.player)
             self.blue_ghost.update(delta_time, self.player)
@@ -426,24 +419,29 @@ class Engine:
                 self.player.pixel_y + self.cell_size // 6,
             ),
         )
-    
+
     def _render_pause_menu(self, menu_font, screen_width, screen_height):
-        self._draw_gameplay() 
-        
-        overlay = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
+        self._draw_gameplay()
+
+        overlay = pygame.Surface(
+            (screen_width, screen_height), pygame.SRCALPHA
+        )
         overlay.fill((0, 0, 0, 150))
         self.screen.blit(overlay, (0, 0))
-        
+
         pause_surface = menu_font.render("PAUSED", True, (255, 255, 255))
         self.screen.blit(
             pause_surface,
             (screen_width // 2 - 80, screen_height // 2 - 50),
         )
 
-
-    def _render_settings(self, menu_bg, menu_font, screen_width, screen_height):
+    def _render_settings(
+        self, menu_bg, menu_font, screen_width, screen_height
+    ):
         self.screen.blit(menu_bg, (0, 0))
-        title_surface = menu_font.render("CHEAT MODE (PEER REVIEW)", True, (0, 255, 255))
+        title_surface = menu_font.render(
+            "CHEAT MODE (PEER REVIEW)", True, (0, 255, 255)
+        )
         self.screen.blit(
             title_surface,
             (screen_width // 2 - 200, screen_height // 2 - 250),
@@ -455,7 +453,7 @@ class Engine:
             f"3. INCREASED SPEED: {'ON' if self.cheat_speed else 'OFF'}",
             "4. ADD EXTRA LIFE (+1)",
             "5. SKIP LEVEL (INSTANT WIN)",
-            "BACK"
+            "BACK",
         ]
 
         for index, option in enumerate(self.settings_options):
@@ -469,7 +467,6 @@ class Engine:
             y_pos = (screen_height // 2 - 150) + (index * 50)
 
             self.screen.blit(text_surface, (x_pos, y_pos))
-
 
     def _game_loop(self):
         running = True
@@ -505,25 +502,26 @@ class Engine:
                     screen_height,
                 )
             elif current_state == GameState.PLAYING:
-                
+
                 if not self._update_playing(delta_time):
                     running = False
                     continue
             elif current_state == GameState.SETTINGS:
-                self._render_settings(menu_bg, menu_font, screen_width, screen_height)
-
+                self._render_settings(
+                    menu_bg, menu_font, screen_width, screen_height
+                )
 
             elif current_state == GameState.CREDITS:
                 self._render_credits(menu_font, screen_width, screen_height)
-            
+
             elif current_state == GameState.PLAYING:
                 self.maze_adapter._render_hud(
-                    self.screen, 
-                    score=self.score, 
-                    lives=self.life, 
-                    level=self.level
+                    self.screen,
+                    score=self.score,
+                    lives=self.life,
+                    level=self.level,
                 )
-            
+
             elif current_state == GameState.PAUSE:
                 print("we here pause")
                 self._render_pause_menu(menu_font, screen_width, screen_height)

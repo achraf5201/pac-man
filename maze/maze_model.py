@@ -1,10 +1,5 @@
 class MazeModel:
-    MOVES = [
-        (1, 0, -1),
-        (2, 1, 0),
-        (4, 0, 1),
-        (8, -1, 0)
-    ]
+    MOVES = [(1, 0, -1), (2, 1, 0), (4, 0, 1), (8, -1, 0)]
 
     def __init__(self, maze):
         self.walls = maze.maze
@@ -31,7 +26,11 @@ class MazeModel:
         res = []
         for direction, dx, dy in self.MOVES:
             nx, ny = x + dx, y + dy
-            if 0 <= nx < self.width and 0 <= ny < self.height and self.can_move(x, y, direction):
+            if (
+                0 <= nx < self.width
+                and 0 <= ny < self.height
+                and self.can_move(x, y, direction)
+            ):
                 res.append((nx, ny))
         return res
 
