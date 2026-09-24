@@ -11,22 +11,25 @@ class MazeAdapter(MazeModel):
         self.cell_size = cell_size
         self.offset_x = 0
         self.offset_y = 0
-        
+
         pygame.font.init()
         self.font = pygame.font.SysFont(None, 36)
 
         self.pacgum = []
         for i in range(self.height):
             row = []
-            for j in range(self.width):                
-                is_corner = i in (0, self.height - 1) and j in (0, self.width - 1)
+            for j in range(self.width):
+                is_corner = i in (0, self.height - 1) and j in (
+                    0,
+                    self.width - 1,
+                )
                 if is_corner or self.walls[i][j] in (15, 42):
                     row.append(0)
                 else:
                     row.append(1)
-                    
+
             self.pacgum.append(row)
-            
+
         self.super_pacgum = []
         for i in range(self.height):
             row = []
@@ -67,16 +70,18 @@ class MazeAdapter(MazeModel):
         ) // 2
 
     def _render_hud(self, screen, score=0, lives=3, level=0):
-        if not hasattr(self, 'font'):
+        if not hasattr(self, "font"):
             pygame.font.init()
             self.font = pygame.font.SysFont(None, 36)
 
         start_pointx = self.offset_x
-        start_pointy = self.offset_y - 40 
-        
-        hud_string = f"Score: {score}          Lives: {lives}          Level: {level}"
+        start_pointy = self.offset_y - 40
+
+        hud_string = (
+            f"Score: {score}          Lives: {lives}          Level: {level}"
+        )
         text_surface = self.font.render(hud_string, True, (255, 255, 255))
-        
+
         screen.blit(text_surface, (start_pointx, start_pointy))
 
     def _render_maze(self, cell_value, x, y, screen):
@@ -90,11 +95,11 @@ class MazeAdapter(MazeModel):
                 "resolution."
             )
             sys.exit(1)
-            
+
         if cell_value == 15:
             pygame.draw.rect(
                 screen,
-                'blue',
+                "blue",
                 (pix, piy, self.cell_size, self.cell_size),
             )
 
@@ -121,6 +126,10 @@ class MazeAdapter(MazeModel):
         center_y = piy + (self.cell_size // 2)
 
         if self.pacgum[y][x] == 1:
-            pygame.draw.circle(screen, (255, 255, 255), (center_x, center_y), 4)
+            pygame.draw.circle(
+                screen, (255, 255, 255), (center_x, center_y), 4
+            )
         elif self.super_pacgum[y][x] == 1:
-            pygame.draw.circle(screen, (255, 255, 255), (center_x, center_y), 10)
+            pygame.draw.circle(
+                screen, (255, 255, 255), (center_x, center_y), 10
+            )

@@ -28,9 +28,10 @@ class Engine:
         self.end_time = 0
         self.level = level
         self.life = life
+        self.respawn_time = 7
         self.cell_size = cell_size
         self.maze_gen = MazeGenerator(
-            size=(15, 15), entry_cell=(0, 0), exit_cell=(15, 15)
+            size=(14, 14), entry_cell=(0, 0), exit_cell=(15, 15)
         )
         self.maze_adapter = MazeAdapter(self.maze_gen, cell_size)
         self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -347,19 +348,36 @@ class Engine:
     def _apply_ghost_mode(self):
         if self.super_power:
             if not self.red_ghost.return_in_life:
-                self.red_ghost.scare_mode()
+                if self.end_time - self.start_time >= 3:
+                    self.red_ghost.return_mode()
+                else:
+                    self.red_ghost.scare_mode()
             else:
                 self.red_ghost.normal_mode()
+
             if not self.blue_ghost.return_in_life:
-                self.blue_ghost.scare_mode()
+                if self.end_time - self.start_time >= 3:
+                    self.blue_ghost.return_mode()
+                else:
+                    self.blue_ghost.scare_mode()
             else:
                 self.blue_ghost.normal_mode()
+
             if not self.orange_ghost.return_in_life:
                 self.orange_ghost.scare_mode()
+                if self.end_time - self.start_time >= 3:
+                    self.orange_ghost.return_mode()
+                else:
+                    self.orange_ghost.scare_mode()
             else:
                 self.orange_ghost.normal_mode()
+
             if not self.pink_ghost.return_in_life:
                 self.pink_ghost.scare_mode()
+                if self.end_time - self.start_time >= 3:
+                    self.pink_ghost.return_mode()
+                else:
+                    self.pink_ghost.scare_mode()
             else:
                 self.pink_ghost.normal_mode()
         else:
@@ -367,7 +385,6 @@ class Engine:
             self.orange_ghost.return_in_life = False
             self.blue_ghost.return_in_life = False
             self.pink_ghost.return_in_life = False
-
             self.red_ghost.normal_mode()
             self.blue_ghost.normal_mode()
             self.orange_ghost.normal_mode()
@@ -478,7 +495,7 @@ class Engine:
         screen_width = self.screen.get_width()
         screen_height = self.screen.get_height()
 
-        menu_bg = pygame.image.load("credits.jpg").convert()
+        menu_bg = pygame.image.load("assets/credits.jpg").convert()
         menu_bg = pygame.transform.scale(
             menu_bg, (screen_width, screen_height)
         )

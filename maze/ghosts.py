@@ -37,6 +37,8 @@ class Ghost:
         self.seen = deque()
         self.start_time = 0
         self.end_time = 0
+        self.flag = 1
+        self.respawn = 7
 
         self.range = []
 
@@ -54,7 +56,7 @@ class Ghost:
                     continue
                 self.range.append((j, i))
 
-    def _touching_player(self, player, threshold=None):
+    def _touching_player(self, player):
         """Real, pixel-based collision test with the player.
 
         cell_x/cell_y only flip to the new cell once an entity fully
@@ -73,21 +75,28 @@ class Ghost:
     def _shortest_path_next_step(self, start, goal):
         if start == goal:
             return None
+
         d = {start: None}
         queue = deque([start])
+
         while queue:
-            x, y = queue.popleft()
-            if (x, y) == goal:
+            current = queue.popleft()
+
+            if current == goal:
                 break
-            for neighbor in self.maze_adapter.neighbors(x, y):
+
+            for neighbor in self.maze_adapter.neighbors(*current):
                 if neighbor not in d:
-                    d[neighbor] = (x, y)
+                    d[neighbor] = current
                     queue.append(neighbor)
+
         if goal not in d:
             return None
+
         step = goal
         while d[step] != start:
             step = d[step]
+
         return step
 
     def _shortest_path(self, start, goal):
@@ -123,6 +132,10 @@ class Ghost:
 
     def chase_player(self, delta_time, player):
         if self._touching_player(player):
+            # if lives <= 0:
+            #     lost
+            # else:
+            #     playing
             print("YOU LOST")
             sys.exit()
         step = self.speed * self.maze_adapter.cell_size * delta_time
@@ -139,6 +152,10 @@ class Ghost:
                 (self.cell_x, self.cell_y), (player.cell_x, player.cell_y)
             )
             if next_cell is None:
+                # if lives <= 0:
+                #     lost
+                # else:
+                #     playing
                 print("YOU LOST")
                 sys.exit()
 
@@ -155,26 +172,9 @@ class Ghost:
             self.pixel_y += (dy / dist) * step
 
     def dead_and_return(self, delta_time):
-        # A ghost gets at most 5 seconds to make it back to its spawn
-        # cell after being eaten. Normally it arrives well before that
-        # via the pathfinding below; this is a hard cap so it can never
-        # get stuck wandering forever (e.g. if a path briefly isn't
-        # found) and "return to life" reliably happens within 5s.
-        if time.perf_counter() - self.start_time >= 5:
-            self.cell_x, self.cell_y = self.source_x, self.source_y
-            self.pixel_x, self.pixel_y = self.maze_adapter.cell_to_pixel(
-                self.source_x, self.source_y
-            )
-            self.target_cell_x, self.target_cell_y = (
-                self.source_x,
-                self.source_y,
-            )
-            self.target_px, self.target_py = self.pixel_x, self.pixel_y
-            self.ghost_dead = False
-            self.return_in_life = True
-            self.end_time = time.perf_counter()
-            return
-
+        if self.flag == 1:
+            self.start_time = time.perf_counter()
+            self.flag = 0
         step = 10 * self.maze_adapter.cell_size * delta_time
 
         dx = self.target_px - self.pixel_x
@@ -188,18 +188,14 @@ class Ghost:
             self.pixel_y = self.target_py
 
             if (self.cell_x, self.cell_y) == (self.source_x, self.source_y):
-                self.ghost_dead = False
                 self.return_in_life = True
-                self.end_time = time.perf_counter()
+                self.ghost_dead = False
                 return
 
             next_cell = self._shortest_path_next_step(
                 (self.cell_x, self.cell_y), (self.source_x, self.source_y)
             )
             if next_cell is None:
-                # No path found back home this frame (start == goal is
-                # already handled above) — hold position and retry
-                # next frame instead of reviving away from home.
                 return
             x, y = next_cell
             dir_x, dir_y = self.get_dir(x, y)
@@ -306,12 +302,6 @@ class Ghost:
 
     def update(self, delta_time, player):
         if self.ghost_dead:
-            # A dead ghost is only ever moved by dead_and_return(); this
-            # must win over everything else, or a stray self.run=True
-            # from scare_mode() (called after this update(), from
-            # engine._apply_ghost_mode) makes ghosts_running() ALSO
-            # move it next frame -> two movement functions fighting
-            # over the same target cell every frame.
             self.random_move = False
             self.chase = False
             self.run = False
@@ -325,19 +315,27 @@ class Ghost:
             self.random_move = True
             self.chase = False
 
-        if self.chase:
-            self.chase_player(delta_time, player)
-        if self.random_move:
-            self.ghosts_random_move(delta_time)
+        if self.start_time == 0:
+            if self.chase:
+                self.chase_player(delta_time, player)
+            if self.random_move:
+                self.ghosts_random_move(delta_time)
+        else:
+            self.end_time = time.perf_counter()
+            if self.end_time - self.start_time >= self.respawn:
+                if self.chase:
+                    self.chase_player(delta_time, player)
+                if self.random_move:
+                    self.ghosts_random_move(delta_time)
+
         if self.run:
             self.ghosts_running(delta_time, player)
+
         if self.ghost_dead:
             self.dead_and_return(delta_time)
 
     def scare_mode(self):
         if self.ghost_dead:
-            # Still on its way home as eyes — keep it that way instead
-            # of turning run=True back on and fighting dead_and_return.
             self.dead_mode()
             return
 
@@ -377,6 +375,21 @@ class Ghost:
                 self.maze_adapter.cell_size - self.maze_adapter.cell_size // 4,
             ),
         )
+
+    def return_mode(self):
+        if self.ghost_dead:
+            self.dead_mode()
+            return
+        self.sprite = pygame.image.load("assets/ghost_images/return.png")
+        self.sprite = pygame.transform.scale(
+            self.sprite,
+            (
+                self.maze_adapter.cell_size - self.maze_adapter.cell_size // 4,
+                self.maze_adapter.cell_size - self.maze_adapter.cell_size // 4,
+            ),
+        )
+        self.run = True
+        self.random_move = False
 
 
 class RedGhost(Ghost):

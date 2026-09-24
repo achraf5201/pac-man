@@ -45,12 +45,6 @@ class Player:
             return True
         return False
 
-    def eat_ghost(self, x, y):
-        pass
-
-    def rotate_sprite(self):
-        self.sprite
-
     def update(self, delta_time, engine):
         step = self.speed * self.maze_adapter.cell_size * delta_time
         dx = self.target_px - self.pixel_x
@@ -79,7 +73,6 @@ class Player:
             if self.current_dir and self.maze_adapter.can_move(
                 self.cell_x, self.cell_y, self.current_dir
             ):
-                self.rotate_sprite()
                 dir_x, dir_y = self.get_cor(self.current_dir)
                 self.target_cell_x = self.cell_x + dir_x
                 self.target_cell_y = self.cell_y + dir_y
